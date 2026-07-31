@@ -1,0 +1,108 @@
+{% extends "admin/base_admin.html" %}
+{% block content %}
+<div class="mb-8">
+  <a href="{{ url_for('admin.pricing_profiles') }}" class="font-bold text-red-700">← Zurück zu Pricing Profilen</a>
+  <h1 class="mt-3 text-4xl font-black">
+    {% if profile %}Pricing Profil bearbeiten{% else %}Neues Pricing Profil{% endif %}
+  </h1>
+  <p class="mt-2 text-slate-600">
+    Diese Werte werden im Pricing Engine bei Bus Rental Anfragen verwendet.
+  </p>
+</div>
+
+<form method="post" class="grid gap-8 xl:grid-cols-[1fr_.85fr]">
+  <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+  <section class="rounded-[2rem] bg-white p-8 shadow-sm">
+    <h2 class="text-2xl font-black">Grunddaten</h2>
+
+    <div class="mt-6 grid gap-5 sm:grid-cols-2">
+      <label class="font-bold sm:col-span-2">
+        Profilname
+        <input class="field mt-2" name="name" value="{{ profile.name if profile else '' }}" placeholder="z.B. 53 Sitze" required>
+      </label>
+
+      <label class="font-bold">
+        Bus-Kategorie
+        <input class="field mt-2" name="bus_category" value="{{ profile.bus_category if profile else '' }}" placeholder="z.B. Reisebus, Doppeldecker, Kleine Gruppen" required>
+      </label>
+
+      <label class="flex items-center gap-3 rounded-2xl bg-slate-50 p-4 font-bold">
+        <input type="checkbox" name="is_active" {% if profile is none or profile.is_active %}checked{% endif %}>
+        Aktiv
+      </label>
+    </div>
+  </section>
+
+  <section class="rounded-[2rem] bg-white p-8 shadow-sm">
+    <h2 class="text-2xl font-black">Haupttarife</h2>
+
+    <div class="mt-6 grid gap-5 sm:grid-cols-2">
+      <label class="font-bold">
+        €/km
+        <input class="field mt-2" name="price_per_km" inputmode="decimal" value="{{ profile.price_per_km if profile else '' }}" placeholder="z.B. 1,85" required>
+      </label>
+
+      <label class="font-bold">
+        €/Stunde
+        <input class="field mt-2" name="hourly_rate" inputmode="decimal" value="{{ profile.hourly_rate if profile else '' }}" placeholder="z.B. 65" required>
+      </label>
+
+      <label class="font-bold">
+        Wartezeit €/Stunde
+        <input class="field mt-2" name="waiting_hourly_rate" inputmode="decimal" value="{{ profile.waiting_hourly_rate if profile else '' }}" placeholder="z.B. 38" required>
+      </label>
+
+      <label class="font-bold">
+        Minimum/Tag netto
+        <input class="field mt-2" name="minimum_day_rate" inputmode="decimal" value="{{ profile.minimum_day_rate if profile else '' }}" placeholder="z.B. 750" required>
+      </label>
+    </div>
+  </section>
+
+  <section class="rounded-[2rem] bg-white p-8 shadow-sm xl:col-span-2">
+    <h2 class="text-2xl font-black">Zuschläge & Steuer</h2>
+
+    <div class="mt-6 grid gap-5 sm:grid-cols-5">
+      <label class="font-bold">
+        Ausland %
+        <input class="field mt-2" name="international_surcharge_pct" inputmode="decimal" value="{{ profile.international_surcharge_pct if profile else '0' }}">
+      </label>
+
+      <label class="font-bold">
+        Wochenende %
+        <input class="field mt-2" name="weekend_surcharge_pct" inputmode="decimal" value="{{ profile.weekend_surcharge_pct if profile else '0' }}">
+      </label>
+
+      <label class="font-bold">
+        Feiertag %
+        <input class="field mt-2" name="holiday_surcharge_pct" inputmode="decimal" value="{{ profile.holiday_surcharge_pct if profile else '0' }}">
+      </label>
+
+      <label class="font-bold">
+        Nacht %
+        <input class="field mt-2" name="night_surcharge_pct" inputmode="decimal" value="{{ profile.night_surcharge_pct if profile else '0' }}">
+      </label>
+
+      <label class="font-bold">
+        USt %
+        <input class="field mt-2" name="vat_percent" inputmode="decimal" value="{{ profile.vat_percent if profile else '10' }}">
+      </label>
+    </div>
+
+    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+      <button class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">Speichern</button>
+      <a href="{{ url_for('admin.pricing_profiles') }}" class="rounded-2xl bg-slate-100 px-6 py-4 text-center font-black hover:bg-slate-200">Abbrechen</a>
+    </div>
+  </section>
+</form>
+
+{% if profile %}
+  <section class="mt-8 rounded-[2rem] bg-white p-8 shadow-sm">
+    <h2 class="text-2xl font-black">Hinweis</h2>
+    <p class="mt-3 leading-7 text-slate-600">
+      Bereits gespeicherte Kalkulationen bleiben unverändert. Änderungen an diesem Profil gelten nur für neue Kalkulationen.
+    </p>
+  </section>
+{% endif %}
+{% endblock %}

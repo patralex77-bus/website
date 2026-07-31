@@ -1,0 +1,536 @@
+{
+  "version": "school-destinations-v4",
+  "pricing_note": "Prices are placeholders/richtpreise. In production, prices should be calculated or overridden in backend.",
+  "zones": {
+    "A": {
+      "label": "Zone A",
+      "distance": "bis 40 km",
+      "price53": "ab 490 €",
+      "price75": "ab 690 €",
+      "tone": "red",
+      "text": "Kurze Fahrten, ideal für Halbtagsprogramme oder kurze Ganztagesausflüge."
+    },
+    "B": {
+      "label": "Zone B",
+      "distance": "bis 90 km",
+      "price53": "ab 690 €",
+      "price75": "ab 890 €",
+      "tone": "amber",
+      "text": "Klassische Tagesfahrten rund um Wien mit gutem Verhältnis aus Fahrzeit und Aufenthalt."
+    },
+    "C": {
+      "label": "Zone C",
+      "distance": "bis 130 km",
+      "price53": "ab 890 €",
+      "price75": "ab 1.090 €",
+      "tone": "emerald",
+      "text": "Längere Tagesfahrten mit mehr Buszeit, aber sehr attraktiven Zielen für Kinder und Jugendliche."
+    },
+    "D": {
+      "label": "Zone D",
+      "distance": "bis 200 km",
+      "price53": "ab 1.190 €",
+      "price75": "ab 1.490 €",
+      "tone": "indigo",
+      "text": "Weit entfernte Ziele – höherer Preis und längere Buszeit, dafür besonderer Erlebniswert."
+    }
+  },
+  "filters": [
+    {
+      "id": "all",
+      "label": "Alle"
+    },
+    {
+      "id": "wandern",
+      "label": "Wandern / Natur"
+    },
+    {
+      "id": "geschichte",
+      "label": "Geschichte"
+    },
+    {
+      "id": "freizeit",
+      "label": "Freizeit"
+    },
+    {
+      "id": "tiere",
+      "label": "Tiere"
+    },
+    {
+      "id": "staedte",
+      "label": "Städte"
+    },
+    {
+      "id": "technik",
+      "label": "Technik"
+    }
+  ],
+  "destinations": [
+    {
+      "id": "schoenbrunn",
+      "title": "Tiergarten Schönbrunn",
+      "zone": "A",
+      "lon": 16.302,
+      "lat": 48.184,
+      "time": "20–30 Min",
+      "age": "Kindergarten bis Sekundarstufe I",
+      "icon": "🐼",
+      "tags": [
+        "freizeit",
+        "tiere",
+        "staedte"
+      ],
+      "short": "Zoo, Tiere, Spielplätze",
+      "desc": "Zoo für Kinder mit Spielplätzen, Streichelzoo und Angeboten für Schulen und Kindergärten. Sehr gut für jüngere Gruppen und klassische Schulausflüge innerhalb Wiens.",
+      "price53": "ab 490 €",
+      "price75": "ab 690 €"
+    },
+    {
+      "id": "technisches-museum",
+      "title": "Technisches Museum Wien",
+      "zone": "A",
+      "lon": 16.318,
+      "lat": 48.19,
+      "time": "20–30 Min",
+      "age": "Kindergarten bis Sekundarstufe II",
+      "icon": "⚙️",
+      "tags": [
+        "geschichte",
+        "technik",
+        "staedte"
+      ],
+      "short": "Technik, Forschung, Workshops",
+      "desc": "Sehr gut geeignet für Schulklassen, die Technik, Energie, Mobilität und Wissenschaft spielerisch erleben möchten. Besonders praktisch durch die kurze Anfahrt innerhalb Wiens.",
+      "price53": "ab 490 €",
+      "price75": "ab 690 €"
+    },
+    {
+      "id": "lobau",
+      "title": "Naturpark Lobau",
+      "zone": "A",
+      "lon": 16.5,
+      "lat": 48.176,
+      "time": "25–35 Min",
+      "age": "Kindergarten bis Unterstufe",
+      "icon": "🌿",
+      "tags": [
+        "wandern",
+        "tiere"
+      ],
+      "short": "Natur, Au, Bewegung",
+      "desc": "Natur- und Bewegungsausflug am Rand von Wien. Geeignet für einfache Outdoor-Programme, Naturbeobachtung und kurze Schultage ohne lange Anfahrt.",
+      "price53": "ab 490 €",
+      "price75": "ab 690 €"
+    },
+    {
+      "id": "flughafen",
+      "title": "Flughafen Wien-Schwechat",
+      "zone": "A",
+      "lon": 16.569,
+      "lat": 48.11,
+      "time": "25–35 Min",
+      "age": "Volksschule bis Sekundarstufe",
+      "icon": "✈️",
+      "tags": [
+        "technik",
+        "freizeit"
+      ],
+      "short": "Flughafen, Technik, Logistik",
+      "desc": "Interessante technische und organisatorische Destination für Gruppen, die Mobilität, Luftfahrt und Logistik erleben möchten.",
+      "price53": "ab 490 €",
+      "price75": "ab 690 €"
+    },
+    {
+      "id": "laxenburg",
+      "title": "Schlosspark Laxenburg",
+      "zone": "A",
+      "lon": 16.357,
+      "lat": 48.069,
+      "time": "ca. 30 Min",
+      "age": "Kindergarten bis Volksschule",
+      "icon": "🌳",
+      "tags": [
+        "wandern",
+        "freizeit"
+      ],
+      "short": "Park, Bewegung, Natur",
+      "desc": "Großer Park für Bewegung, Naturerlebnis und einfache Ausflugstage mit viel Platz im Freien. Besonders geeignet für jüngere Gruppen und unkomplizierte Tagesplanung.",
+      "price53": "ab 490 €",
+      "price75": "ab 690 €"
+    },
+    {
+      "id": "liechtenstein",
+      "title": "Schloss Liechtenstein",
+      "zone": "A",
+      "lon": 16.27,
+      "lat": 48.092,
+      "time": "30–40 Min",
+      "age": "Volksschule bis Unterstufe",
+      "icon": "🏰",
+      "tags": [
+        "geschichte"
+      ],
+      "short": "Burg, Führung, Mittelalter",
+      "desc": "Kurze Anfahrt und gutes historisches Thema. Besonders geeignet für Klassen, die Mittelalter, Burgen und regionale Geschichte erleben möchten.",
+      "price53": "ab 490 €",
+      "price75": "ab 690 €"
+    },
+    {
+      "id": "seegrotte",
+      "title": "Seegrotte Hinterbrühl",
+      "zone": "A",
+      "lon": 16.258,
+      "lat": 48.087,
+      "time": "30–40 Min",
+      "age": "Volksschule bis Unterstufe",
+      "icon": "⛵",
+      "tags": [
+        "freizeit",
+        "geschichte"
+      ],
+      "short": "Unterirdischer See, Führung",
+      "desc": "Einprägsames Erlebnis mit Führung und unterirdischem See. Gute Kombination aus Erlebnis, Geschichte und kurzer Anfahrt.",
+      "price53": "ab 490 €",
+      "price75": "ab 690 €"
+    },
+    {
+      "id": "sparbach",
+      "title": "Naturpark Sparbach",
+      "zone": "A",
+      "lon": 16.191,
+      "lat": 48.07,
+      "time": "35–45 Min",
+      "age": "Kindergarten bis Unterstufe",
+      "icon": "🦌",
+      "tags": [
+        "wandern",
+        "tiere"
+      ],
+      "short": "Naturpark, Tiere, Wandern",
+      "desc": "Naturpark mit Bewegung, Tieren und Waldprogramm. Gute Option für Schulen, die ein naturnahes Programm mit kurzer Anfahrt suchen.",
+      "price53": "ab 490 €",
+      "price75": "ab 690 €"
+    },
+    {
+      "id": "fossilienwelt",
+      "title": "Fossilienwelt Weinviertel",
+      "zone": "A",
+      "lon": 16.385,
+      "lat": 48.444,
+      "time": "35–45 Min",
+      "age": "Volksschule bis Unterstufe",
+      "icon": "🦴",
+      "tags": [
+        "geschichte",
+        "freizeit"
+      ],
+      "short": "Forschen, Fossilien, Mitmachen",
+      "desc": "Erlebnismuseum, Forscherpark und Fossilien schürfen. Ideal für Klassen, die Entdecken, Lernen und Mitmachen kombinieren möchten.",
+      "price53": "ab 490 €",
+      "price75": "ab 690 €"
+    },
+    {
+      "id": "kreuzenstein",
+      "title": "Burg Kreuzenstein",
+      "zone": "A",
+      "lon": 16.325,
+      "lat": 48.379,
+      "time": "35–45 Min",
+      "age": "Volksschule bis Sekundarstufe",
+      "icon": "🏰",
+      "tags": [
+        "geschichte"
+      ],
+      "short": "Burg, Mittelalter, Führung",
+      "desc": "Sehr beliebte Burgdestination nahe Wien. Geeignet für Mittelalter, Geschichte, Ritter-Themen und geführte Programme.",
+      "price53": "ab 490 €",
+      "price75": "ab 690 €"
+    },
+    {
+      "id": "carnuntum",
+      "title": "Carnuntum",
+      "zone": "B",
+      "lon": 16.86,
+      "lat": 48.112,
+      "time": "40–50 Min",
+      "age": "Volksschule bis Sekundarstufe II",
+      "icon": "🏛️",
+      "tags": [
+        "geschichte"
+      ],
+      "short": "Römer, Geschichte, Führungen",
+      "desc": "Römische Stadt mit rekonstruierten Häusern. Geschichte zum Anfassen, besonders gut für Schulprogramme und historische Themen geeignet.",
+      "price53": "ab 690 €",
+      "price75": "ab 890 €"
+    },
+    {
+      "id": "schlossorth",
+      "title": "Schloss Orth Nationalpark-Zentrum",
+      "zone": "B",
+      "lon": 16.7,
+      "lat": 48.145,
+      "time": "45–55 Min",
+      "age": "Volksschule bis Unterstufe",
+      "icon": "🦆",
+      "tags": [
+        "wandern",
+        "tiere"
+      ],
+      "short": "Nationalpark, Donau-Auen, Natur",
+      "desc": "Gute Natur- und Nationalparkdestination östlich von Wien. Geeignet für Programme zu Wasser, Au, Tieren und Lebensräumen.",
+      "price53": "ab 690 €",
+      "price75": "ab 890 €"
+    },
+    {
+      "id": "schlosshof",
+      "title": "Schloss Hof",
+      "zone": "B",
+      "lon": 16.931,
+      "lat": 48.268,
+      "time": "ca. 50 Min",
+      "age": "Kindergarten bis Volksschule",
+      "icon": "🏰",
+      "tags": [
+        "geschichte",
+        "freizeit",
+        "tiere"
+      ],
+      "short": "Schloss, Streichelzoo, Erlebniswege",
+      "desc": "Erlebnispfade, Streichelzoo, Wassererlebnispfad und Kinderprogramm in barocker Umgebung. Sehr attraktiv für jüngere Schulgruppen.",
+      "price53": "ab 690 €",
+      "price75": "ab 890 €"
+    },
+    {
+      "id": "ernstbrunn",
+      "title": "Wildpark Ernstbrunn",
+      "zone": "B",
+      "lon": 16.356,
+      "lat": 48.538,
+      "time": "55–60 Min",
+      "age": "Kindergarten bis Volksschule",
+      "icon": "🐺",
+      "tags": [
+        "wandern",
+        "tiere"
+      ],
+      "short": "Wildpark, Tiere, Natur",
+      "desc": "Tiererlebnis im Freien mit Naturbezug. Sehr gut für jüngere Kinder und Programme mit viel Bewegung draußen.",
+      "price53": "ab 690 €",
+      "price75": "ab 890 €"
+    },
+    {
+      "id": "stpoelten",
+      "title": "St. Pölten",
+      "zone": "B",
+      "lon": 15.623,
+      "lat": 48.204,
+      "time": "55–65 Min",
+      "age": "Volksschule bis Sekundarstufe",
+      "icon": "🏙️",
+      "tags": [
+        "staedte",
+        "geschichte"
+      ],
+      "short": "Museum, Kultur, Stadt",
+      "desc": "St. Pölten eignet sich für Museums- und Kulturprogramme sowie kombinierte Stadt- und Bildungsprogramme.",
+      "price53": "ab 690 €",
+      "price75": "ab 890 €"
+    },
+    {
+      "id": "museumnoe",
+      "title": "Museum Niederösterreich",
+      "zone": "B",
+      "lon": 15.628,
+      "lat": 48.205,
+      "time": "55–65 Min",
+      "age": "Volksschule bis Sekundarstufe",
+      "icon": "🏛️",
+      "tags": [
+        "geschichte",
+        "staedte"
+      ],
+      "short": "Museum, Natur, Geschichte",
+      "desc": "Gute Bildungsdestination für Natur, Geschichte und Landesausstellungen. Besonders passend für thematische Schulprogramme.",
+      "price53": "ab 690 €",
+      "price75": "ab 890 €"
+    },
+    {
+      "id": "kinderkunstlabor",
+      "title": "KinderKunstLabor St. Pölten",
+      "zone": "B",
+      "lon": 15.631,
+      "lat": 48.203,
+      "time": "55–65 Min",
+      "age": "Kindergarten bis Unterstufe",
+      "icon": "🎨",
+      "tags": [
+        "freizeit",
+        "staedte"
+      ],
+      "short": "Kunst, Kreativität, Workshops",
+      "desc": "Kreative Programme und Kunstvermittlung für Kinder. Gut kombinierbar mit einem Ausflug nach St. Pölten.",
+      "price53": "ab 690 €",
+      "price75": "ab 890 €"
+    },
+    {
+      "id": "asparn",
+      "title": "Asparn an der Zaya / MAMUZ",
+      "zone": "B",
+      "lon": 16.182,
+      "lat": 48.586,
+      "time": "60–70 Min",
+      "age": "Volksschule bis Unterstufe",
+      "icon": "🛖",
+      "tags": [
+        "geschichte"
+      ],
+      "short": "Archäologie, Geschichte, Freigelände",
+      "desc": "Archäologisches Freigelände und historische Wohnformen. Geschichte wird hier als Abenteuer und Erlebnis vermittelt.",
+      "price53": "ab 690 €",
+      "price75": "ab 890 €"
+    },
+    {
+      "id": "familypark",
+      "title": "Märchenpark / Familypark",
+      "zone": "B",
+      "lon": 16.714,
+      "lat": 47.891,
+      "time": "60–70 Min",
+      "age": "Kindergarten bis Unterstufe",
+      "icon": "🎡",
+      "tags": [
+        "freizeit"
+      ],
+      "short": "Freizeitpark, Spiel, Erlebnis",
+      "desc": "Freizeit- und Themenpark, besonders beliebt für Volksschule und jüngere Gruppen mit Fokus auf Spaß und Bewegung.",
+      "price53": "ab 690 €",
+      "price75": "ab 890 €"
+    },
+    {
+      "id": "hohewand",
+      "title": "Hohe Wand",
+      "zone": "C",
+      "lon": 16.008,
+      "lat": 47.831,
+      "time": "75–90 Min",
+      "age": "Volksschule bis Sekundarstufe",
+      "icon": "⛰️",
+      "tags": [
+        "wandern"
+      ],
+      "short": "Natur, Aussicht, Bewegung",
+      "desc": "Naturerlebnis, Aussicht und Bewegung. Geeignet für aktive Gruppen und Programme mit Outdoor-Fokus.",
+      "price53": "ab 890 €",
+      "price75": "ab 1.090 €"
+    },
+    {
+      "id": "semmering",
+      "title": "Semmering",
+      "zone": "C",
+      "lon": 15.829,
+      "lat": 47.644,
+      "time": "80–95 Min",
+      "age": "Volksschule bis Sekundarstufe",
+      "icon": "🚞",
+      "tags": [
+        "wandern",
+        "freizeit",
+        "geschichte"
+      ],
+      "short": "Berge, Bahn, Wandern",
+      "desc": "Klassisches Ausflugsziel mit Natur, Bahn- und Landschaftserlebnis. Geeignet für Wandern, Bewegung und Programme rund um die Semmeringbahn.",
+      "price53": "ab 890 €",
+      "price75": "ab 1.090 €"
+    },
+    {
+      "id": "pamhagen",
+      "title": "Steppentierpark Pamhagen",
+      "zone": "C",
+      "lon": 16.904,
+      "lat": 47.701,
+      "time": "80–90 Min",
+      "age": "Kindergarten bis Volksschule",
+      "icon": "🦓",
+      "tags": [
+        "freizeit",
+        "tiere"
+      ],
+      "short": "Tierpark, Natur, Steppe",
+      "desc": "Tierpark mit Steppentieren und Naturerlebnis. Gut für einen entspannten, familienfreundlichen Ausflugstag.",
+      "price53": "ab 890 €",
+      "price75": "ab 1.090 €"
+    },
+    {
+      "id": "eisgreissler",
+      "title": "Eis-Greissler Erlebnispark",
+      "zone": "C",
+      "lon": 16.034,
+      "lat": 47.652,
+      "time": "85–95 Min",
+      "age": "Kindergarten bis Volksschule",
+      "icon": "🍦",
+      "tags": [
+        "freizeit"
+      ],
+      "short": "Erlebnispark, Spiel, Eis",
+      "desc": "Erlebnispark mit spielerischem Charakter. Sehr beliebt für Klassen mit Fokus auf Spaß, Bewegung und unkompliziertes Programm.",
+      "price53": "ab 890 €",
+      "price75": "ab 1.090 €"
+    },
+    {
+      "id": "mauthausen",
+      "title": "Mauthausen Memorial",
+      "zone": "D",
+      "lon": 14.501,
+      "lat": 48.256,
+      "time": "2:00–2:20 Std",
+      "age": "ab ca. 14 Jahren",
+      "icon": "🕯️",
+      "tags": [
+        "geschichte"
+      ],
+      "short": "Gedenkstätte, Geschichte, Bildung",
+      "desc": "Wichtiges historisch-pädagogisches Ziel für ältere Schüler:innen. Aufgrund des Themas und der Distanz besonders sorgfältig zu planen.",
+      "price53": "ab 1.190 €",
+      "price75": "ab 1.490 €"
+    },
+    {
+      "id": "baerenpark",
+      "title": "Bärenpark Mixnitz",
+      "zone": "D",
+      "lon": 15.358,
+      "lat": 47.335,
+      "time": "1:45–2:05 Std",
+      "age": "Volksschule bis Sekundarstufe",
+      "icon": "🐻",
+      "tags": [
+        "freizeit",
+        "tiere",
+        "wandern"
+      ],
+      "short": "Tiere, Natur, Bewegung",
+      "desc": "Tier- und Naturerlebnis in der Steiermark. Gut für Gruppen, die einen besonderen Tagesausflug mit längerer Anfahrt suchen.",
+      "price53": "ab 1.190 €",
+      "price75": "ab 1.490 €"
+    },
+    {
+      "id": "eisenwelt",
+      "title": "Eisenwelt / Erzberg",
+      "zone": "D",
+      "lon": 14.885,
+      "lat": 47.537,
+      "time": "2:00–2:25 Std",
+      "age": "Unterstufe bis Sekundarstufe II",
+      "icon": "⛏️",
+      "tags": [
+        "geschichte",
+        "technik",
+        "freizeit"
+      ],
+      "short": "Bergbau, Technik, Erlebnis",
+      "desc": "Montangeschichte, Technik und Erlebnisprogramm. Geeignet für ältere Schüler:innen und thematische Ausflüge zu Industrie, Rohstoffen und Region.",
+      "price53": "ab 1.190 €",
+      "price75": "ab 1.490 €"
+    }
+  ]
+}

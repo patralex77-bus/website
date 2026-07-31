@@ -1,0 +1,79 @@
+{
+  "version": "bus-rental-form-v1",
+  "purpose": "Detailed inquiry form for tailor-made bus rental offers.",
+  "target_customers": [
+    "travel_agency",
+    "company",
+    "association",
+    "private_group",
+    "school_or_institution"
+  ],
+  "required_for_real_price": [
+    "route",
+    "departure_place",
+    "destination_or_itinerary",
+    "travel_dates",
+    "number_of_days",
+    "number_of_passengers",
+    "bus_requirements",
+    "special_needs"
+  ],
+  "fields": {
+    "customer": [
+      "customer_type",
+      "company_or_organisation",
+      "contact_name",
+      "email",
+      "phone"
+    ],
+    "trip": [
+      "trip_type",
+      "departure_place",
+      "destination",
+      "route_description",
+      "countries",
+      "date_start",
+      "date_end",
+      "time_departure",
+      "time_return",
+      "number_of_days"
+    ],
+    "group": [
+      "passengers",
+      "luggage",
+      "accessibility_needs",
+      "children_or_students",
+      "tour_leader_phone"
+    ],
+    "bus": [
+      "bus_size_preference",
+      "bus_count",
+      "comfort_requirements",
+      "mandatory_equipment"
+    ],
+    "program": [
+      "itinerary",
+      "stops",
+      "driver_waiting_required",
+      "overnight_trip",
+      "driver_accommodation_known"
+    ],
+    "commercial": [
+      "budget_indication",
+      "deadline_for_offer",
+      "additional_notes"
+    ]
+  },
+  "future_backend_notes": {
+    "store_as": "bus_rental_inquiries",
+    "status_flow": [
+      "new",
+      "reviewed",
+      "offer_in_preparation",
+      "offer_sent",
+      "accepted",
+      "declined"
+    ],
+    "pricing_integration": "Later connect to route/distance engine and vehicle availability."
+  }
+}

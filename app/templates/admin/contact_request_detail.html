@@ -1,0 +1,115 @@
+{% extends "admin/base_admin.html" %}
+{% block content %}
+{% set status_labels = {
+  'new': 'Neu',
+  'read': 'Gelesen',
+  'answered': 'Beantwortet',
+  'archived': 'Archiv'
+} %}
+
+<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+  <div>
+    <a href="{{ url_for('admin.contact_requests_list') }}" class="font-bold text-red-700">← Zurück zu Kontaktanfragen</a>
+    <h1 class="mt-3 text-4xl font-black">Kontaktanfrage #{{ item.id }}</h1>
+    <p class="mt-2 text-slate-600">{{ item.created_at.strftime('%d.%m.%Y %H:%M') if item.created_at else '' }}</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="mailto:{{ item.email }}?subject=Ihre Anfrage bei Austria Express" class="rounded-2xl bg-red-700 px-5 py-3 font-black text-white hover:bg-red-800">Antworten</a>
+    {% if item.phone %}
+      <a href="tel:{{ item.phone }}" class="rounded-2xl border border-slate-200 bg-white px-5 py-3 font-black">Anrufen</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid gap-8 xl:grid-cols-[.95fr_1.05fr]">
+  <section class="rounded-[2rem] bg-white p-8 shadow-sm">
+    <div class="mb-6 flex flex-wrap gap-2">
+      <span class="rounded-full {% if item.status == 'new' %}bg-red-100 text-red-700{% elif item.status == 'answered' %}bg-green-100 text-green-700{% else %}bg-slate-100 text-slate-600{% endif %} px-4 py-2 text-sm font-black">{{ status_labels.get(item.status, item.status) }}</span>
+      {% if item.request_type %}
+        <span class="rounded-full bg-slate-100 px-4 py-2 text-sm font-black text-slate-600">{{ item.request_type }}</span>
+      {% endif %}
+    </div>
+
+    <h2 class="text-2xl font-black">{{ item.subject or 'Kontaktanfrage' }}</h2>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl bg-slate-50 p-4">
+        <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Kontakt</div>
+        <div class="mt-2 font-bold">{{ item.name }}</div>
+        <div class="text-sm text-slate-600">{{ item.organisation or '-' }}</div>
+      </div>
+
+      <div class="rounded-2xl bg-slate-50 p-4">
+        <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">E-Mail / Telefon</div>
+        <div class="mt-2 font-bold">{{ item.email }}</div>
+        <div class="text-sm text-slate-600">{{ item.phone or '-' }}</div>
+      </div>
+
+      <div class="rounded-2xl bg-slate-50 p-4">
+        <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Anfrageart</div>
+        <div class="mt-2 font-bold">{{ item.request_type or '-' }}</div>
+      </div>
+
+      <div class="rounded-2xl bg-slate-50 p-4">
+        <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Bevorzugter Kontakt</div>
+        <div class="mt-2 font-bold">{{ item.preferred_contact or '-' }}</div>
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-2xl bg-slate-50 p-5">
+      <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Nachricht</div>
+      <div class="mt-3 whitespace-pre-line leading-8 text-slate-800">{{ item.message }}</div>
+    </div>
+
+    <div class="mt-6 rounded-2xl bg-slate-50 p-5 text-xs text-slate-500">
+      <strong>Technische Daten:</strong><br>
+      IP: {{ item.ip_address or '-' }}<br>
+      User Agent: {{ item.user_agent or '-' }}
+    </div>
+  </section>
+
+  <section class="rounded-[2rem] bg-white p-8 shadow-sm">
+    <h2 class="text-2xl font-black">Bearbeitung</h2>
+
+    <form method="post" class="mt-6 grid gap-4">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+      <label class="font-bold">Status
+        <select name="status" class="field mt-2">
+          {% for s in ['new','read','answered','archived'] %}
+            <option value="{{ s }}" {% if item.status == s %}selected{% endif %}>{{ status_labels[s] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="font-bold">Interne Notizen
+        <textarea class="field mt-2 min-h-[180px]" name="internal_notes" placeholder="z.B. Rückruf erledigt, Angebot per E-Mail gesendet, Spam...">{{ item.internal_notes or '' }}</textarea>
+      </label>
+
+      <button class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">Speichern</button>
+    </form>
+
+    <div class="mt-6 flex flex-wrap gap-2">
+      {% for s in ['read','answered','archived'] %}
+        <form method="post" action="{{ url_for('admin.contact_request_status', item_id=item.id) }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="status" value="{{ s }}">
+          <button class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-black hover:bg-slate-50">{{ status_labels[s] }}</button>
+        </form>
+      {% endfor %}
+    </div>
+
+    <form method="post" action="{{ url_for('admin.contact_request_delete', item_id=item.id) }}" class="mt-8" onsubmit="return confirm('Kontaktanfrage wirklich löschen?');">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <button class="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-black text-red-700 hover:bg-red-100">Löschen</button>
+    </form>
+
+    <div class="mt-8 rounded-2xl bg-slate-50 p-5">
+      <h3 class="font-black">Späterer E-Mail Versand</h3>
+      <p class="mt-2 text-sm leading-6 text-slate-600">
+        Diese Anfrage ist bereits gespeichert. In der nächsten Ausbaustufe kann hier automatische E-Mail-Benachrichtigung oder SMTP/SendGrid-Anbindung ergänzt werden.
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

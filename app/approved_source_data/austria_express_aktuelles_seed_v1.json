@@ -1,0 +1,79 @@
+{
+  "version": "aktuelles-kundenstimmen-seed-v1",
+  "posts": [
+    {
+      "title": "Schulfahrten einfacher planen",
+      "slug": "schulfahrten-einfacher-planen",
+      "category": "Schulfahrten",
+      "excerpt": "Warum klare Ziele, genaue Zeiten und passende Busgröße die Organisation für Schulen deutlich erleichtern.",
+      "body": "Für Schulen ist eine gute Vorbereitung entscheidend: Ziel, Uhrzeiten, Gruppengröße, Begleitpersonen und besondere Anforderungen sollten möglichst früh feststehen. So kann der passende Bus gewählt und ein realistisches Angebot erstellt werden.",
+      "status": "published",
+      "sort_order": 10
+    },
+    {
+      "title": "Mietbus-Angebote für Reisebüros und Firmen",
+      "slug": "mietbus-angebote-fuer-reisebueros-und-firmen",
+      "category": "Bus Rental",
+      "excerpt": "Individuelle Busangebote benötigen mehr als nur Start und Ziel – Route, Programm und Einsatzzeit sind entscheidend.",
+      "body": "Bei Bus Rental Anfragen berücksichtigen wir Route, Aufenthalte, Gepäck, Anzahl der Tage, Fahrerplanung und gewünschte Ausstattung. Dadurch entstehen Angebote, die zur tatsächlichen Durchführung der Reise passen.",
+      "status": "published",
+      "sort_order": 20
+    },
+    {
+      "title": "Gruppenreisen in Europa gut vorbereiten",
+      "slug": "gruppenreisen-in-europa-gut-vorbereiten",
+      "category": "Gruppenreisen",
+      "excerpt": "Für internationale Gruppenreisen sind realistische Zeitplanung, Pausen und klare Kommunikation besonders wichtig.",
+      "body": "Bei Gruppenreisen in Europa spielen Streckenführung, Fahrzeiten, Pausen, Grenzübertritte, Gepäck und Fahrerplanung eine wichtige Rolle. Je genauer diese Punkte vorbereitet sind, desto zuverlässiger kann die Reise durchgeführt werden.",
+      "status": "published",
+      "sort_order": 30
+    }
+  ],
+  "reviews": [
+    {
+      "customer_name": "Schulgruppe aus Wien",
+      "organisation": "Schulgruppe aus Wien",
+      "public_display_name": "Schulgruppe aus Wien",
+      "rating": 5,
+      "trip_type": "Schulfahrt",
+      "text": "Die Planung war unkompliziert, der Bus passend zur Gruppe und die Kommunikation zuverlässig.",
+      "status": "approved"
+    },
+    {
+      "customer_name": "Firmenkunde",
+      "organisation": "Firmenkunde",
+      "public_display_name": "Firmenkunde",
+      "rating": 5,
+      "trip_type": "Transfer / Event",
+      "text": "Pünktliche Durchführung, klare Abstimmung und angenehmer Ablauf für die gesamte Gruppe.",
+      "status": "approved"
+    },
+    {
+      "customer_name": "Reiseveranstalter",
+      "organisation": "Reiseveranstalter",
+      "public_display_name": "Reiseveranstalter",
+      "rating": 5,
+      "trip_type": "Bus Rental",
+      "text": "Für individuelle Routen ist eine schnelle, genaue und flexible Angebotslegung besonders wichtig.",
+      "status": "approved"
+    }
+  ],
+  "filters": [
+    {
+      "id": "all",
+      "label": "Alle"
+    },
+    {
+      "id": "Schulfahrten",
+      "label": "Schulfahrten"
+    },
+    {
+      "id": "Bus Rental",
+      "label": "Bus Rental"
+    },
+    {
+      "id": "Gruppenreisen",
+      "label": "Gruppenreisen"
+    }
+  ]
+}

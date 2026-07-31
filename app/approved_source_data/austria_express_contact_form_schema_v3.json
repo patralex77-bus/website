@@ -1,0 +1,43 @@
+{
+  "version": "contact-page-form-v3",
+  "company": {
+    "name": "AUSTRIAN INCENTIVE SERVICE GmbH",
+    "brand": "Austria Express",
+    "address": {
+      "street": "Landstraßer Hauptstraße 2",
+      "office": "Büro Top Nr. M2.01.27",
+      "postal_code": "1030",
+      "city": "Wien",
+      "district": "Wien 3 (Landstraße)",
+      "country": "Österreich"
+    },
+    "registered_seat": "Wien",
+    "registration_date": "03.08.2007",
+    "legal_form": "Gesellschaft mit beschränkter Haftung",
+    "commercial_register_number": "FN 296632 z",
+    "commercial_register_court": "HG Wien",
+    "vat_id": "ATU 63609848",
+    "management": "Alexander Patrachkov",
+    "trade_authority": "Magistrat der Stadt Wien, Magistratsabteilung 63 – Gewerberecht",
+    "chamber_membership": "Wirtschaftskammer Wien",
+    "phone": "+43 676 849 113 200",
+    "email": "office@austria-express.eu",
+    "activities": [
+      "Reisebüro",
+      "Vermittlung und Besorgung von Fahrausweisen",
+      "Betrieb von Omnibussen",
+      "KFZ-Vermietung"
+    ]
+  },
+  "form_fields": [
+    "name",
+    "organisation",
+    "email",
+    "phone",
+    "request_type",
+    "preferred_contact_method",
+    "subject",
+    "message",
+    "privacy_consent"
+  ]
+}

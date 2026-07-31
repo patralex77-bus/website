@@ -1,0 +1,13 @@
+# First Run Commands on Render
+
+After the first successful deploy, open Render Shell and run these commands once:
+
+flask --app run.py import-school-destinations
+flask --app run.py import-fleet
+flask --app run.py import-aktuelles
+
+The start script already runs:
+
+flask --app run.py init-db
+
+on every start. This creates missing tables and does not delete existing data.

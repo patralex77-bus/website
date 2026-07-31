@@ -1,0 +1,23 @@
+html { scroll-behavior: smooth; }
+.field {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  padding: .9rem 1rem;
+  outline: none;
+}
+.field:focus {
+  border-color: #b91c1c;
+  box-shadow: 0 0 0 3px rgba(185, 28, 28, .12);
+}
+.check-grid label {
+  display: flex;
+  gap: .7rem;
+  align-items: center;
+  padding: .7rem .9rem;
+  border-radius: 1rem;
+  background: #f8fafc;
+  font-weight: 700;
+  font-size: .9rem;
+}

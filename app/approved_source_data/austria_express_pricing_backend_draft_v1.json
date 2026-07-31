@@ -1,0 +1,47 @@
+{
+  "version": "pricing-engine-draft-v1",
+  "status": "conceptual",
+  "important_note": "Do not copy a competitor's proprietary tariff/rate tables. Use own tariffs and own business logic. This structure follows general pricing components: route distance, operating hours, surcharges, occupancy, minimum price.",
+  "vehicle_categories": {
+    "bus_53": {
+      "seats_max": 53,
+      "label": "Reisebus bis 53 Plätze"
+    },
+    "bus_75": {
+      "seats_max": 75,
+      "label": "Großbus / Doppeldecker bis 75 Plätze"
+    }
+  },
+  "calculation_components": [
+    "arrival_distance_km",
+    "return_distance_km",
+    "route_distance_km",
+    "operating_hours",
+    "standing_hours",
+    "weekday_or_sunday_surcharge",
+    "holiday_surcharge",
+    "night_surcharge",
+    "season_surcharge",
+    "occupancy_surcharge",
+    "minimum_rate",
+    "manual_override"
+  ],
+  "school_zone_fallbacks": {
+    "A": {
+      "bus_53": 490,
+      "bus_75": 690
+    },
+    "B": {
+      "bus_53": 690,
+      "bus_75": 890
+    },
+    "C": {
+      "bus_53": 890,
+      "bus_75": 1090
+    },
+    "D": {
+      "bus_53": 1190,
+      "bus_75": 1490
+    }
+  }
+}

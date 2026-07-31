@@ -1,0 +1,132 @@
+{
+  "version": "fleet-v1",
+  "note": "Photo fields are prepared for future backend/CMS use.",
+  "photo_schema": {
+    "main_photo": "string path or URL",
+    "gallery": [
+      "array of image paths or URLs"
+    ],
+    "alt_text": "SEO-friendly image description"
+  },
+  "fleet": [
+    {
+      "id": "neoplan-skyliner",
+      "title": "Neoplan Skyliner",
+      "type": "Doppeldecker",
+      "seats": "77 Sitze",
+      "quantity": "1 Fahrzeug",
+      "class": "4★ Reisebus",
+      "best_for": "Große Schulgruppen, Vereine, Events und Gruppenreisen mit vielen Teilnehmer:innen.",
+      "short": "Doppeldecker für große Gruppen",
+      "tags": [
+        "grossgruppen",
+        "doppeldecker",
+        "schulen",
+        "vereine"
+      ],
+      "features": [
+        "77 Sitzplätze",
+        "Große Kapazität",
+        "Ideal für mehrere Schulklassen",
+        "Viel Gepäckraum"
+      ],
+      "photo_note": "Foto / Galerie kann später ergänzt werden.",
+      "icon": "🚌"
+    },
+    {
+      "id": "volvo-9900",
+      "title": "Volvo 9900",
+      "type": "Reisebus",
+      "seats": "53 Sitze",
+      "quantity": "4 Fahrzeuge",
+      "class": "4★ Reisebus · Baujahr 2022/2023",
+      "best_for": "Komfortable Tagesfahrten, Schulfahrten, internationale Reisen und hochwertige Gruppentransfers.",
+      "short": "Moderner 53-Sitzer für Komfortreisen",
+      "tags": [
+        "komfort",
+        "schulen",
+        "firmen",
+        "vereine"
+      ],
+      "features": [
+        "53 Sitzplätze",
+        "Baujahr 2022/2023",
+        "4 Fahrzeuge",
+        "Sehr gut für Tagesfahrten und Reisen"
+      ],
+      "photo_note": "Pro Fahrzeug können später Fotos ergänzt werden.",
+      "icon": "🚌"
+    },
+    {
+      "id": "man-lions-coach-55",
+      "title": "MAN Lion’s Coach",
+      "type": "Reisebus",
+      "seats": "55 Sitze",
+      "quantity": "1 Fahrzeug",
+      "class": "4★ Reisebus",
+      "best_for": "Klassische Gruppenreisen, Schulfahrten und Ausflüge mit größerer Gruppe.",
+      "short": "55-Sitzer für klassische Gruppenfahrten",
+      "tags": [
+        "schulen",
+        "vereine",
+        "gruppen"
+      ],
+      "features": [
+        "55 Sitzplätze",
+        "4★ Kategorie",
+        "Für Schul- und Vereinsfahrten",
+        "Solide Reisebus-Kapazität"
+      ],
+      "photo_note": "Foto kann später ergänzt werden.",
+      "icon": "🚌"
+    },
+    {
+      "id": "man-lions-coach-53",
+      "title": "MAN Lion’s Coach",
+      "type": "Reisebus",
+      "seats": "53 Sitze",
+      "quantity": "2 Fahrzeuge",
+      "class": "4★ Reisebus",
+      "best_for": "Flexible Standardgröße für Schulen, Firmen, Vereine und Tagesausflüge.",
+      "short": "53-Sitzer für flexible Einsätze",
+      "tags": [
+        "schulen",
+        "firmen",
+        "vereine",
+        "standard"
+      ],
+      "features": [
+        "53 Sitzplätze",
+        "2 Fahrzeuge",
+        "4★ Kategorie",
+        "Sehr flexibel einsetzbar"
+      ],
+      "photo_note": "Fotos können später pro Fahrzeug ergänzt werden.",
+      "icon": "🚌"
+    },
+    {
+      "id": "man-lions-coach-46",
+      "title": "MAN Lion’s Coach",
+      "type": "Kompakter Reisebus",
+      "seats": "46 Sitze",
+      "quantity": "1 Fahrzeug",
+      "class": "4★ Reisebus",
+      "best_for": "Kleinere Gruppen, kompaktere Routen, Vereine, Firmen und Schulgruppen mit weniger Personen.",
+      "short": "Kompakter Bus für kleinere Gruppen",
+      "tags": [
+        "kleinegruppen",
+        "firmen",
+        "vereine",
+        "schulen"
+      ],
+      "features": [
+        "46 Sitzplätze",
+        "Ideal für kleinere Gruppen",
+        "4★ Kategorie",
+        "Praktisch bei kompakter Gruppengröße"
+      ],
+      "photo_note": "Foto kann später ergänzt werden.",
+      "icon": "🚌"
+    }
+  ]
+}

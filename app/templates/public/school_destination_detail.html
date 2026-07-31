@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ destination.title }} – Austria Express Schulen{% endblock %}
+{% block content %}
+<section class="bg-slate-900 text-white">
+  <div class="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
+    <a href="{{ url_for('public.schulen') }}" class="font-bold text-red-300 hover:text-white">← Zurück zu Schulen</a>
+    <h1 class="mt-5 text-4xl font-black tracking-tight sm:text-5xl">{{ destination.title }}</h1>
+    <p class="mt-5 text-lg leading-8 text-slate-300">{{ destination.short_description }}</p>
+  </div>
+</section>
+
+<section class="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8">
+  {% if destination.main_image %}
+    <img src="{{ url_for('static', filename=destination.main_image) }}" alt="{{ destination.alt_text or destination.title }}" class="mb-8 max-h-[480px] w-full rounded-[2rem] object-cover shadow-sm">
+  {% endif %}
+  <div class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div><strong>Zone:</strong> {{ destination.zone }}</div>
+      <div><strong>Kategorie:</strong> {{ destination.category }}</div>
+      <div><strong>Alter:</strong> {{ destination.age_group or '-' }}</div>
+      <div><strong>Fahrtzeit:</strong> {{ destination.travel_time or '-' }}</div>
+    </div>
+    <div class="mt-8 leading-8 text-slate-700 whitespace-pre-line">{{ destination.full_description or destination.short_description }}</div>
+  </div>
+</section>
+{% endblock %}

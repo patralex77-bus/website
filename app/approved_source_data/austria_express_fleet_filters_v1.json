@@ -1,0 +1,34 @@
+{
+  "version": "fleet-filters-v1",
+  "note": "These are the public filter buttons on /fuhrpark. The id must match vehicle tags imported into FleetVehicle.suitable_for or the lower-case category name.",
+  "filters": [
+    {
+      "id": "all",
+      "label": "Alle"
+    },
+    {
+      "id": "grossgruppen",
+      "label": "Großgruppen"
+    },
+    {
+      "id": "doppeldecker",
+      "label": "Doppeldecker"
+    },
+    {
+      "id": "komfort",
+      "label": "Komfort"
+    },
+    {
+      "id": "schulen",
+      "label": "Schulen"
+    },
+    {
+      "id": "firmen",
+      "label": "Firmen"
+    },
+    {
+      "id": "vereine",
+      "label": "Vereine"
+    }
+  ]
+}

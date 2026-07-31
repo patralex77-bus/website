@@ -1,0 +1,175 @@
+{% extends "admin/base_admin.html" %}
+{% block content %}
+{% set status_labels = {
+  'new': 'Neu',
+  'reviewed': 'Geprüft',
+  'offer_in_preparation': 'Angebot in Vorbereitung',
+  'offer_sent': 'Angebot gesendet',
+  'accepted': 'Angenommen',
+  'declined': 'Abgelehnt',
+  'archived': 'Archiv'
+} %}
+{% set latest_calc = item.calculations[-1] if item.calculations else None %}
+
+<div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+  <div>
+    <a href="{{ url_for('admin.bus_requests_list') }}" class="font-bold text-red-700">← Zurück zu Anfragen</a>
+    <h1 class="mt-3 text-4xl font-black">Bus Rental Anfrage #{{ item.id }}</h1>
+    <p class="mt-2 text-slate-600">{{ item.created_at.strftime('%d.%m.%Y %H:%M') if item.created_at else '' }}</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <a href="{{ url_for('admin.bus_request_offer', item_id=item.id) }}" class="rounded-2xl bg-red-700 px-5 py-3 font-black text-white hover:bg-red-800">Angebot erstellen</a>
+    <a href="mailto:{{ item.email }}?subject=Ihre Busanfrage bei Austria Express" class="rounded-2xl bg-slate-900 px-5 py-3 font-black text-white">E-Mail</a>
+    {% if item.phone %}
+      <a href="tel:{{ item.phone }}" class="rounded-2xl border border-slate-200 bg-white px-5 py-3 font-black">Anrufen</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid gap-8 xl:grid-cols-[.95fr_1.05fr]">
+  <section class="rounded-[2rem] bg-white p-8 shadow-sm">
+    <div class="mb-6 flex flex-wrap gap-2">
+      <span class="rounded-full bg-red-100 px-4 py-2 text-sm font-black text-red-700">{{ status_labels.get(item.status, item.status) }}</span>
+      <span class="rounded-full bg-slate-100 px-4 py-2 text-sm font-black text-slate-600">{{ item.trip_type }}</span>
+      {% if item.customer_type %}<span class="rounded-full bg-slate-100 px-4 py-2 text-sm font-black text-slate-600">{{ item.customer_type }}</span>{% endif %}
+    </div>
+
+    <h2 class="text-2xl font-black">Anfragedaten</h2>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl bg-slate-50 p-4"><div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Kontakt</div><div class="mt-2 font-bold">{{ item.contact_name }}</div><div class="text-sm text-slate-600">{{ item.organisation or '-' }}</div></div>
+      <div class="rounded-2xl bg-slate-50 p-4"><div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">E-Mail / Telefon</div><div class="mt-2 font-bold">{{ item.email }}</div><div class="text-sm text-slate-600">{{ item.phone or '-' }}</div></div>
+      <div class="rounded-2xl bg-slate-50 p-4"><div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Route</div><div class="mt-2 font-bold">{{ item.departure_place }} → {{ item.destination }}</div></div>
+      <div class="rounded-2xl bg-slate-50 p-4"><div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Datum / Zeit</div><div class="mt-2 font-bold">{{ item.date_start or '-' }}{% if item.date_end %} – {{ item.date_end }}{% endif %}</div><div class="text-sm text-slate-600">{{ item.time_departure or '-' }}{% if item.time_return %} – {{ item.time_return }}{% endif %}</div></div>
+      <div class="rounded-2xl bg-slate-50 p-4"><div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Gruppe</div><div class="mt-2 font-bold">{{ item.passengers or '-' }} Pax · {{ item.days or '-' }} Tag(e)</div><div class="text-sm text-slate-600">{{ item.group_notes or '-' }}</div></div>
+      <div class="rounded-2xl bg-slate-50 p-4"><div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Bus</div><div class="mt-2 font-bold">{{ item.bus_size or '-' }}{% if item.bus_count %} · {{ item.bus_count }} Bus(se){% endif %}</div><div class="text-sm text-slate-600">{% if item.req_wc %}WC · {% endif %}{% if item.req_usb %}USB · {% endif %}{% if item.req_power %}220V · {% endif %}{% if item.req_wifi %}WLAN · {% endif %}{% if item.req_doubledecker %}Doppeldecker · {% endif %}{% if item.req_kitchen %}Bordküche{% endif %}</div></div>
+    </div>
+
+    <div class="mt-6 space-y-4">
+      <div class="rounded-2xl bg-slate-50 p-4">
+        <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Route / Programm</div>
+        <div class="mt-2 whitespace-pre-line text-slate-700">{{ item.route_description or '-' }}</div>
+      </div>
+      <div class="rounded-2xl bg-slate-50 p-4">
+        <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Besonderheiten</div>
+        <div class="mt-2 whitespace-pre-line text-slate-700">{{ item.special_needs or '-' }}</div>
+      </div>
+    </div>
+
+    <form method="post" class="mt-6 grid gap-4">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <label class="font-bold">Status
+        <select name="status" class="field mt-2">
+          {% for s in ['new','reviewed','offer_in_preparation','offer_sent','accepted','declined','archived'] %}
+            <option value="{{ s }}" {% if item.status == s %}selected{% endif %}>{{ status_labels[s] }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="font-bold">Interne Notizen
+        <textarea class="field mt-2 min-h-[140px]" name="internal_notes" placeholder="z.B. Angebotspreis, Rückfragen, Abstimmung, Subunternehmer...">{{ item.internal_notes or '' }}</textarea>
+      </label>
+      <button class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white">Speichern</button>
+    </form>
+
+    <div class="mt-5 flex flex-wrap gap-2">
+      {% for s in ['reviewed','offer_in_preparation','offer_sent','accepted','declined','archived'] %}
+        <form method="post" action="{{ url_for('admin.bus_request_status', item_id=item.id) }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="status" value="{{ s }}">
+          <button class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-black hover:bg-slate-50">{{ status_labels[s] }}</button>
+        </form>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="rounded-[2rem] bg-white p-8 shadow-sm">
+    <h2 class="text-2xl font-black">Pricing Engine</h2>
+    <p class="mt-2 text-slate-600">Interne Kalkulation. Die berechnete Summe wird nicht automatisch an den Kunden gesendet.</p>
+
+    {% if latest_calc %}
+      <div class="mt-6 rounded-3xl bg-slate-900 p-6 text-white">
+        <div class="text-sm font-black uppercase tracking-[.18em] text-red-300">Letzte Berechnung</div>
+        <div class="mt-3 text-4xl font-black">{{ latest_calc.gross_total }} €</div>
+        <div class="mt-1 text-sm text-slate-300">Brutto · Netto {{ latest_calc.net_total }} € · USt {{ latest_calc.vat_amount }} €</div>
+        {% if latest_calc.manual_override_net %}
+          <div class="mt-3 rounded-2xl bg-white/10 p-3 text-sm font-bold">Manual Override Netto: {{ latest_calc.manual_override_net }} €</div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('admin.bus_request_calculate', item_id=item.id) }}" class="mt-6 grid gap-4">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+      <label class="font-bold">Preisprofil
+        <select name="profile_id" class="field mt-2" required>
+          {% for p in profiles %}
+            <option value="{{ p.id }}">{{ p.name }} – {{ p.bus_category }} · {{ p.price_per_km }} €/km · {{ p.hourly_rate }} €/h</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="font-bold">Gesamt km<input class="field mt-2" name="total_km" inputmode="decimal" placeholder="z.B. 320" required></label>
+        <label class="font-bold">Einsatzstunden<input class="field mt-2" name="operating_hours" inputmode="decimal" placeholder="z.B. 10" required></label>
+        <label class="font-bold">Wartezeit Std.<input class="field mt-2" name="waiting_hours" inputmode="decimal" value="0"></label>
+        <label class="font-bold">Tage<input class="field mt-2" name="days" inputmode="numeric" value="{{ item.days or 1 }}"></label>
+        <label class="font-bold">Maut<input class="field mt-2" name="tolls" inputmode="decimal" value="0"></label>
+        <label class="font-bold">Parken<input class="field mt-2" name="parking" inputmode="decimal" value="0"></label>
+        <label class="font-bold">Fahrerhotel<input class="field mt-2" name="driver_hotel_cost" inputmode="decimal" value="0"></label>
+        <label class="font-bold">Manual Override Netto<input class="field mt-2" name="manual_override_net" inputmode="decimal" placeholder="optional"></label>
+      </div>
+
+      <div class="check-grid grid gap-2 sm:grid-cols-2">
+        <label><input type="checkbox" name="is_international"> Ausland / international</label>
+        <label><input type="checkbox" name="is_weekend"> Wochenende</label>
+        <label><input type="checkbox" name="is_holiday"> Feiertag</label>
+        <label><input type="checkbox" name="is_night"> Nacht</label>
+      </div>
+
+      <label class="font-bold">Kalkulationsnotiz
+        <textarea class="field mt-2 min-h-[100px]" name="manual_note" placeholder="z.B. Maut geschätzt, Hotel separat, Preis manuell gerundet..."></textarea>
+      </label>
+
+      <button class="rounded-2xl bg-slate-900 px-6 py-4 font-black text-white hover:bg-red-700">Berechnung speichern</button>
+    </form>
+  </section>
+</div>
+
+<section class="mt-8 rounded-[2rem] bg-white p-8 shadow-sm">
+  <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <h2 class="text-2xl font-black">Berechnungen</h2>
+      <p class="mt-2 text-slate-600">Historie aller internen Kalkulationen zu dieser Anfrage.</p>
+    </div>
+  </div>
+
+  <div class="mt-5 grid gap-4">
+    {% for c in item.calculations|reverse %}
+      <div class="rounded-3xl bg-slate-50 p-5">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <strong>{{ c.profile.name }}</strong> · {{ c.total_km }} km · {{ c.operating_hours }} h · {{ c.days }} Tag(e)
+            <div class="mt-2 text-sm text-slate-600">
+              KM {{ c.km_cost }} € · Zeit {{ c.time_cost }} € · Warten {{ c.waiting_cost }} € · Direkte Kosten {{ c.direct_cost }} € · Minimum {{ c.minimum_total }} € · Zuschläge {{ c.surcharge_total }} €
+            </div>
+            {% if c.manual_note %}
+              <div class="mt-2 text-sm text-slate-600"><strong>Notiz:</strong> {{ c.manual_note }}</div>
+            {% endif %}
+          </div>
+          <div class="rounded-2xl bg-white p-4 text-right shadow-sm">
+            <div class="text-sm text-slate-500">Brutto</div>
+            <div class="text-2xl font-black text-red-700">{{ c.gross_total }} €</div>
+            <div class="text-xs text-slate-500">Netto {{ c.net_total }} € · USt {{ c.vat_amount }} €</div>
+            {% if c.manual_override_net %}
+              <div class="mt-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-700">Manual Override</div>
+            {% endif %}
+            <a href="{{ url_for('admin.bus_request_offer', item_id=item.id, calculation_id=c.id) }}" class="mt-3 inline-flex rounded-xl bg-slate-900 px-4 py-2 text-sm font-black text-white hover:bg-red-700">Angebot</a>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="text-slate-600">Noch keine Berechnung.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
