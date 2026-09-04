@@ -19,6 +19,27 @@
   <meta name="twitter:title" content="{{ post.seo_title or post.title }} – Austria Express" />
   <meta name="twitter:description" content="{{ post.seo_description or post.excerpt or 'Aktuelles und Reisetipps von Austria Express.' }}" />
 <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Austria Express responsive fit
+       Instead of forcing browser zoom to 90%, the public pages use a compact
+       desktop scale on smaller monitors. Tailwind spacing and typography are
+       rem-based, so this reduces visual size without breaking mobile layout. */
+    @media (min-width: 1024px) and (max-width: 1536px) {
+      html { font-size: 14.4px; }
+    }
+    @media (min-width: 1537px) {
+      html { font-size: 15.5px; }
+    }
+    @media (max-width: 640px) {
+      html { font-size: 15px; }
+    }
+    img, video {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+
 </head>
 <body class="bg-slate-50 text-slate-900">
   <header class="bg-white border-b border-slate-200 shadow-sm">

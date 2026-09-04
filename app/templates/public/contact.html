@@ -24,6 +24,27 @@
     .field { width: 100%; border-radius: 1rem; border: 1px solid #cbd5e1; background: white; padding: .9rem 1rem; outline: none; }
     .field:focus { border-color: #b91c1c; box-shadow: 0 0 0 3px rgba(185,28,28,.12); }
   </style>
+
+  <style>
+    /* Austria Express responsive fit
+       Instead of forcing browser zoom to 90%, the public pages use a compact
+       desktop scale on smaller monitors. Tailwind spacing and typography are
+       rem-based, so this reduces visual size without breaking mobile layout. */
+    @media (min-width: 1024px) and (max-width: 1536px) {
+      html { font-size: 14.4px; }
+    }
+    @media (min-width: 1537px) {
+      html { font-size: 15.5px; }
+    }
+    @media (max-width: 640px) {
+      html { font-size: 15px; }
+    }
+    img, video {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+
 </head>
 <body class="bg-slate-50 text-slate-900">
   <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
@@ -40,10 +61,10 @@
       <nav class="border-t border-slate-200 py-4 shadow-[0_1px_4px_rgba(0,0,0,.04)]">
         <div class="flex flex-wrap items-center gap-3 text-[16px] font-bold">
           <a href="{{ url_for('public.bus_rental') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Bus Rental</a>
-          <a href="#" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Tours</a>
+          <a href="{{ url_for('public.index') }}#tours" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Tours</a>
           <a href="{{ url_for('public.schulen') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Schulen</a>
           <a href="{{ url_for('public.fuhrpark') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Fuhrpark</a>
-          <a href="#" class="rounded-xl bg-red-700 px-5 py-3 text-white transition">Kontakt</a>
+          <a href="{{ url_for('public.contact') }}" class="rounded-xl bg-red-700 px-5 py-3 text-white transition">Kontakt</a>
         </div>
       </nav>
     </div>
@@ -207,15 +228,15 @@
       <div class="flex flex-col gap-4 lg:items-end">
         <div class="flex flex-wrap gap-4 font-semibold">
           <a href="{{ url_for('public.bus_rental') }}" class="hover:text-slate-950">Bus Rental</a>
-          <a href="#" class="hover:text-slate-950">Tours</a>
+          <a href="{{ url_for('public.index') }}#tours" class="hover:text-slate-950">Tours</a>
           <a href="{{ url_for('public.schulen') }}" class="hover:text-slate-950">Schulen</a>
           <a href="{{ url_for('public.fuhrpark') }}" class="hover:text-slate-950">Fuhrpark</a>
-          <a href="#" class="hover:text-slate-950">Kontakt</a>
+          <a href="{{ url_for('public.contact') }}" class="hover:text-slate-950">Kontakt</a>
         </div>
         <div class="flex flex-wrap gap-4 font-semibold">
-          <a href="austria_express_impressum_v7.html" class="hover:text-slate-950">Impressum</a>
-          <a href="#" class="hover:text-slate-950">Datenschutz</a>
-          <a href="#" class="hover:text-slate-950">AGB</a>
+          <a href="{{ url_for('public.impressum') }}" class="hover:text-slate-950">Impressum</a>
+          <a href="{{ url_for('public.datenschutz') }}" class="hover:text-slate-950">Datenschutz</a>
+          <a href="{{ url_for('public.agb') }}" class="hover:text-slate-950">AGB</a>
         </div>
       </div>
     </div>
