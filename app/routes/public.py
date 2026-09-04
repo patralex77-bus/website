@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
+from datetime import datetime, timezone
 from pathlib import Path
 
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, url_for
 from sqlalchemy import asc, desc
 
 from ..extensions import db
@@ -13,6 +15,94 @@ from ..utils.email_notifications import notify_bus_rental_request, notify_contac
 
 
 public_bp = Blueprint("public", __name__)
+
+
+def _site_base_url() -> str:
+    configured = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
+    if configured:
+        return configured
+    return request.url_root.rstrip("/")
+
+
+def _absolute_url(path: str) -> str:
+    base = _site_base_url()
+    return f"{base}/{path.lstrip('/')}"
+
+
+def _iso_date(value):
+    if not value:
+        return datetime.now(timezone.utc).date().isoformat()
+    try:
+        return value.date().isoformat()
+    except Exception:
+        return datetime.now(timezone.utc).date().isoformat()
+
+
+@public_bp.route("/robots.txt")
+def robots_txt():
+    body = f"""User-agent: *
+Allow: /
+
+Sitemap: {_absolute_url('/sitemap.xml')}
+"""
+    return Response(body, mimetype="text/plain; charset=utf-8")
+
+
+@public_bp.route("/sitemap.xml")
+def sitemap_xml():
+    static_pages = [
+        {"loc": "/", "priority": "1.0", "changefreq": "weekly"},
+        {"loc": "/bus-rental", "priority": "0.9", "changefreq": "monthly"},
+        {"loc": "/schulen", "priority": "0.9", "changefreq": "monthly"},
+        {"loc": "/fuhrpark", "priority": "0.8", "changefreq": "monthly"},
+        {"loc": "/aktuelles-kundenstimmen", "priority": "0.7", "changefreq": "weekly"},
+        {"loc": "/kontakt", "priority": "0.8", "changefreq": "monthly"},
+        {"loc": "/impressum", "priority": "0.3", "changefreq": "yearly"},
+        {"loc": "/datenschutz", "priority": "0.3", "changefreq": "yearly"},
+        {"loc": "/agb", "priority": "0.3", "changefreq": "yearly"},
+    ]
+
+    now = datetime.now(timezone.utc).date().isoformat()
+    urls = []
+
+    for page in static_pages:
+        urls.append({
+            "loc": _absolute_url(page["loc"]),
+            "lastmod": now,
+            "changefreq": page["changefreq"],
+            "priority": page["priority"],
+        })
+
+    posts = (
+        BlogPost.query
+        .filter_by(status="published")
+        .order_by(BlogPost.published_at.desc(), BlogPost.updated_at.desc())
+        .all()
+    )
+
+    for post in posts:
+        urls.append({
+            "loc": _absolute_url(url_for("public.post_detail", slug=post.slug)),
+            "lastmod": _iso_date(post.updated_at or post.published_at),
+            "changefreq": "monthly",
+            "priority": "0.6",
+        })
+
+    xml_items = []
+    for item in urls:
+        xml_items.append(f"""  <url>
+    <loc>{item['loc']}</loc>
+    <lastmod>{item['lastmod']}</lastmod>
+    <changefreq>{item['changefreq']}</changefreq>
+    <priority>{item['priority']}</priority>
+  </url>""")
+
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{chr(10).join(xml_items)}
+</urlset>
+"""
+    return Response(xml, mimetype="application/xml; charset=utf-8")
 
 
 def _load_fleet_filters():

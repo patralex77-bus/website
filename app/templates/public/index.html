@@ -3,8 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Austria Express – Busreisen ab Wien</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Austria Express – Bus mieten, Schulfahrten &amp; Gruppenreisen ab Wien</title>
+  <meta name="description" content="Austria Express bietet Bus Rental, Schulfahrten, Transfers und Gruppenreisen ab Wien und österreichweit. Moderne Reisebusse, individuelle Planung und direkte Anfrage." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}/" />
+
+  <meta property="og:locale" content="de_AT" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Austria Express" />
+  <meta property="og:title" content="Austria Express – Bus mieten, Schulfahrten &amp; Gruppenreisen ab Wien" />
+  <meta property="og:description" content="Austria Express bietet Bus Rental, Schulfahrten, Transfers und Gruppenreisen ab Wien und österreichweit. Moderne Reisebusse, individuelle Planung und direkte Anfrage." />
+  <meta property="og:url" content="{{ request.url_root.rstrip('/') }}/" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Austria Express – Bus mieten, Schulfahrten &amp; Gruppenreisen ab Wien" />
+  <meta name="twitter:description" content="Austria Express bietet Bus Rental, Schulfahrten, Transfers und Gruppenreisen ab Wien und österreichweit. Moderne Reisebusse, individuelle Planung und direkte Anfrage." />
+<script src="https://cdn.tailwindcss.com"></script>
   <style>
     html { scroll-behavior: smooth; }
     .hero-bg {
@@ -15,6 +29,27 @@
       background-position: center;
     }
   </style>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": ["TravelAgency", "LocalBusiness"],
+    "name": "Austria Express",
+    "legalName": "AUSTRIAN INCENTIVE SERVICE GmbH",
+    "url": "{{ request.url_root.rstrip('/') }}/",
+    "telephone": "+43 676 849 113 200",
+    "email": "office@austria-express.eu",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Landstraßer Hauptstraße 2, Büro Top Nr. M2.01.27",
+      "postalCode": "1030",
+      "addressLocality": "Wien",
+      "addressCountry": "AT"
+    },
+    "areaServed": ["Wien", "Niederösterreich", "Österreich", "Europa"],
+    "description": "Bus Rental, Schulfahrten, Transfers und Gruppenreisen ab Wien."
+  }
+  </script>
 </head>
 
 <body class="bg-slate-50 text-slate-900">

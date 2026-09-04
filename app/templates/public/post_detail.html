@@ -4,8 +4,21 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{{ post.seo_title or post.title }} – Austria Express</title>
-  <meta name="description" content="{{ post.seo_description or post.excerpt or post.title }}" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="description" content="{{ post.seo_description or post.excerpt or 'Aktuelles und Reisetipps von Austria Express.' }}" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ url_for('public.post_detail', slug=post.slug) }}" />
+
+  <meta property="og:locale" content="de_AT" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Austria Express" />
+  <meta property="og:title" content="{{ post.seo_title or post.title }} – Austria Express" />
+  <meta property="og:description" content="{{ post.seo_description or post.excerpt or 'Aktuelles und Reisetipps von Austria Express.' }}" />
+  <meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ url_for('public.post_detail', slug=post.slug) }}" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{{ post.seo_title or post.title }} – Austria Express" />
+  <meta name="twitter:description" content="{{ post.seo_description or post.excerpt or 'Aktuelles und Reisetipps von Austria Express.' }}" />
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-900">
   <header class="bg-white border-b border-slate-200 shadow-sm">
