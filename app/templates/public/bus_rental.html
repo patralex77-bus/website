@@ -212,28 +212,20 @@
       </div>
     </section>
 
-    <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-      <div class="rounded-[2rem] bg-slate-900 p-8 text-white shadow-sm lg:p-10">
-        <div class="grid gap-8 lg:grid-cols-[1fr_.45fr] lg:items-center">
+    <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div class="rounded-[2rem] bg-slate-900 p-7 text-white shadow-sm lg:p-8">
+        <div class="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
             <p class="text-sm font-black uppercase tracking-[.18em] text-red-300">Anfrage</p>
-            <h2 class="mt-3 text-3xl font-black tracking-tight">Formular auf eigener Seite</h2>
-            <p class="mt-4 max-w-3xl leading-8 text-slate-300">
-              Für konkrete Anfragen nutzen Sie bitte unser separates Anfrageformular.
-              Dort können Reisebüros, Firmen, Vereine, private Gruppen und Schulen ihre Reisedaten strukturiert übermitteln.
-            </p>
-            <p class="mt-3 max-w-3xl leading-8 text-slate-300">
-              Schulen können dort direkt ein Ziel aus unseren Schulangeboten auswählen und sehen sofort die passende Preiszone mit Richtpreis.
+            <h2 class="mt-3 text-3xl font-black tracking-tight">Individuelles Busangebot anfragen</h2>
+            <p class="mt-4 max-w-3xl leading-7 text-slate-300">
+              Beschreiben Sie Route, Datum, Uhrzeit, Gruppengröße und gewünschte Ausstattung.
+              Wir prüfen die Anfrage und melden uns mit einem passenden Angebot.
             </p>
           </div>
-          <div class="grid gap-3">
-            <a href="{{ url_for('public.anfrage') }}" class="rounded-2xl bg-red-700 px-6 py-4 text-center font-black text-white hover:bg-red-800">
-              Anfrageformular öffnen
-            </a>
-            <a href="{{ url_for('public.anfrage', type='school') }}" class="rounded-2xl bg-white px-6 py-4 text-center font-black text-slate-950 hover:bg-slate-100">
-              Schulfahrt anfragen
-            </a>
-          </div>
+          <a href="{{ url_for('public.anfrage') }}" class="rounded-2xl bg-red-700 px-7 py-4 text-center font-black text-white hover:bg-red-800">
+            Anfrageformular öffnen
+          </a>
         </div>
       </div>
     </section>

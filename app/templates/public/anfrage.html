@@ -77,46 +77,22 @@
   </header>
 
 
+
   <main>
     <section class="bg-slate-900 text-white">
-      <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div class="grid gap-10 lg:grid-cols-[1fr_.85fr] lg:items-center">
-          <div>
-            <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-sm font-bold ring-1 ring-white/15">Anfrageformular</p>
-            <h1 class="mt-5 text-4xl font-black tracking-tight sm:text-5xl">Busangebot einfach anfragen</h1>
-            <p class="mt-5 max-w-3xl text-lg leading-8 text-slate-300">
-              Wählen Sie zuerst, ob es um eine Schulfahrt oder eine individuelle Busanfrage geht.
-              Für Schulen ist das Formular besonders kurz: Ziel auswählen, Richtpreis sehen, Kontaktdaten und Termin ergänzen.
-            </p>
-          </div>
-
-          <div class="rounded-[2rem] bg-white/10 p-6 ring-1 ring-white/15">
-            <div class="grid gap-4">
-              <div class="rounded-3xl bg-white p-6 text-slate-950">
-                <div class="text-sm font-black uppercase tracking-[.18em] text-red-700">Schulen</div>
-                <div class="mt-2 text-2xl font-black">Schulangebot auswählen</div>
-                <p class="mt-3 text-sm leading-6 text-slate-600">Ziel, Zone und Richtpreis sind direkt im Formular sichtbar.</p>
-              </div>
-              <div class="rounded-3xl bg-white p-6 text-slate-950">
-                <div class="text-sm font-black uppercase tracking-[.18em] text-red-700">Bus Rental</div>
-                <div class="mt-2 text-2xl font-black">Individuelle Reise anfragen</div>
-                <p class="mt-3 text-sm leading-6 text-slate-600">Für Transfers, Tagesfahrten, Rundreisen und mehrtägige Programme.</p>
-              </div>
-            </div>
-          </div>
+      <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div class="max-w-4xl">
+          <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-sm font-bold ring-1 ring-white/15">Anfrageformular</p>
+          <h1 class="mt-5 text-4xl font-black tracking-tight sm:text-5xl">Busangebot anfragen</h1>
+          <p class="mt-5 text-lg leading-8 text-slate-300">
+            Für Schulen ist das Formular besonders kurz: Schulangebot auswählen, gewünschtes Datum und Kontaktdaten eintragen.
+            Für individuelle Fahrten können Route und Programm frei beschrieben werden.
+          </p>
         </div>
       </div>
     </section>
 
-    <section class="mx-auto max-w-[1500px] px-4 py-14 sm:px-6 lg:px-8">
-      <div class="mb-8 max-w-4xl">
-        <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Anfrage</p>
-        <h2 class="mt-3 text-3xl font-black tracking-tight">Was möchten Sie anfragen?</h2>
-        <p class="mt-3 leading-7 text-slate-600">
-          Pflichtfelder sind bewusst reduziert. Fehlende Details können später ergänzt werden.
-        </p>
-      </div>
-
+    <section class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           <div class="mb-6 grid gap-3">
@@ -129,101 +105,93 @@
         {% endif %}
       {% endwith %}
 
-      <form action="{{ url_for('public.anfrage') }}" method="post" class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
+      <form action="{{ url_for('public.anfrage') }}" method="post" class="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:p-7">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 
         <div class="grid gap-4 sm:grid-cols-2">
-          <label class="cursor-pointer rounded-3xl border border-slate-200 bg-slate-50 p-5 transition hover:border-red-200 hover:bg-white">
+          <label class="cursor-pointer rounded-3xl border border-slate-200 bg-slate-50 p-4 transition hover:border-red-200 hover:bg-white">
             <input class="mr-2" type="radio" name="request_kind" value="school" {% if request_kind == 'school' %}checked{% endif %}>
             <span class="text-lg font-black">Schulfahrt / Schulangebot</span>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Ziel auswählen, Richtpreis sehen, Termin und Schule eintragen.</p>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Für Schulen: Ziel wählen, Richtpreis sehen, Anfrage absenden.</p>
           </label>
-          <label class="cursor-pointer rounded-3xl border border-slate-200 bg-slate-50 p-5 transition hover:border-red-200 hover:bg-white">
+          <label class="cursor-pointer rounded-3xl border border-slate-200 bg-slate-50 p-4 transition hover:border-red-200 hover:bg-white">
             <input class="mr-2" type="radio" name="request_kind" value="general" {% if request_kind != 'school' %}checked{% endif %}>
             <span class="text-lg font-black">Individuelle Busanfrage</span>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Für Reisebüros, Firmen, Vereine, Transfers, Rundreisen und private Gruppen.</p>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Für Transfers, Tagesfahrten, Firmen, Vereine und Rundreisen.</p>
           </label>
         </div>
 
-        <div class="mt-8 grid gap-8 lg:grid-cols-2">
-          <fieldset id="schoolBlock" class="rounded-3xl bg-slate-50 p-6">
-            <legend class="px-2 text-xl font-black">1. Schulangebot auswählen</legend>
-            <div class="mt-5 grid gap-4">
-              <label class="text-sm font-bold">Tour / Ausflugsziel
-                <select id="schoolDestinationSelect" class="field mt-2" name="school_destination_slug">
-                  <option value="">Bitte Ziel auswählen</option>
-                  {% for item in school_destinations %}
-                    <option
-                      value="{{ item.slug }}"
-                      data-title="{{ item.title }}"
-                      data-zone="{{ item.zone }}"
-                      data-category="{{ item.category }}"
-                      data-travel-time="{{ item.travel_time }}"
-                      data-price53="{{ item.price_53_label }}"
-                      data-price75="{{ item.price_75_label }}"
-                      data-description="{{ item.description }}"
-                      {% if item.slug == selected_school_slug %}selected{% endif %}
-                    >
-                      {{ item.title }} · Zone {{ item.zone }}{% if item.price_53_label %} · 53 Plätze {{ item.price_53_label }}{% endif %}{% if item.price_75_label %} · 75 Plätze {{ item.price_75_label }}{% endif %}
-                    </option>
-                  {% endfor %}
-                </select>
-              </label>
+        <div id="schoolBlock" class="mt-6 rounded-3xl bg-red-50 p-5 ring-1 ring-red-100">
+          <div class="grid gap-5 lg:grid-cols-[1fr_.8fr] lg:items-start">
+            <label class="text-sm font-bold">Schulangebot auswählen
+              <select id="schoolDestinationSelect" class="field mt-2" name="school_destination_slug">
+                <option value="">Bitte Tour auswählen</option>
+                {% for item in school_destinations %}
+                  <option
+                    value="{{ item.slug }}"
+                    data-title="{{ item.title }}"
+                    data-zone="{{ item.zone }}"
+                    data-category="{{ item.category }}"
+                    data-travel-time="{{ item.travel_time }}"
+                    data-price53="{{ item.price_53_label }}"
+                    data-price75="{{ item.price_75_label }}"
+                    data-description="{{ item.description }}"
+                    {% if item.slug == selected_school_slug %}selected{% endif %}
+                  >{{ item.title }}</option>
+                {% endfor %}
+              </select>
+              <span class="mt-2 block text-xs font-medium leading-5 text-slate-500">
+                Im Menü stehen bewusst nur die Tour-Namen. Die Details erscheinen rechts nach der Auswahl.
+              </span>
+            </label>
 
-              <div id="schoolPricePreview" class="rounded-3xl bg-white p-5 shadow-sm">
-                <div class="text-sm font-black uppercase tracking-[.18em] text-red-700">Richtpreis</div>
-                <h3 id="schoolPreviewTitle" class="mt-2 text-2xl font-black">Bitte Ziel auswählen</h3>
-                <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div class="rounded-2xl bg-slate-50 p-4">
-                    <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">53 Plätze</div>
-                    <div id="schoolPreviewPrice53" class="mt-2 text-xl font-black">–</div>
-                  </div>
-                  <div class="rounded-2xl bg-slate-50 p-4">
-                    <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Doppeldecker</div>
-                    <div id="schoolPreviewPrice75" class="mt-2 text-xl font-black">–</div>
-                  </div>
+            <div id="schoolPricePreview" class="rounded-3xl bg-white p-5 shadow-sm">
+              <div class="text-sm font-black uppercase tracking-[.18em] text-red-700">Richtpreis</div>
+              <h3 id="schoolPreviewTitle" class="mt-2 text-2xl font-black">Bitte Tour auswählen</h3>
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                <div class="rounded-2xl bg-slate-50 p-4">
+                  <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">53 Plätze</div>
+                  <div id="schoolPreviewPrice53" class="mt-2 text-xl font-black">–</div>
                 </div>
-                <p id="schoolPreviewMeta" class="mt-4 text-sm leading-6 text-slate-600">Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.</p>
+                <div class="rounded-2xl bg-slate-50 p-4">
+                  <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Doppeldecker</div>
+                  <div id="schoolPreviewPrice75" class="mt-2 text-xl font-black">–</div>
+                </div>
               </div>
-
-              <label class="text-sm font-bold">Schulstufe / Klasse
-                <input class="field mt-2" name="class_level" placeholder="z. B. 3A, 4. Klasse, Unterstufe, Oberstufe" />
-              </label>
+              <p id="schoolPreviewMeta" class="mt-4 text-sm leading-6 text-slate-600">Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.</p>
             </div>
-          </fieldset>
+          </div>
+        </div>
 
-          <fieldset id="generalBlock" class="rounded-3xl bg-slate-50 p-6">
-            <legend class="px-2 text-xl font-black">1. Individuelle Busanfrage</legend>
-            <div class="mt-5 grid gap-4">
-              <label class="text-sm font-bold">Kundentyp
-                <select id="customerType" class="field mt-2" name="customer_type">
-                  <option>Reisebüro / Tour Operator</option>
-                  <option>Firma</option>
-                  <option>Verein / Organisation</option>
-                  <option>Private Gruppe</option>
-                  <option>Institution / Schule</option>
-                </select>
-              </label>
-              <label class="text-sm font-bold">Art der Fahrt
-                <select id="tripType" class="field mt-2" name="trip_type">
-                  <option>Tagesfahrt</option>
-                  <option>Transfer</option>
-                  <option>Mehrtagestour</option>
-                  <option>Rundreise</option>
-                  <option>Event / Shuttle</option>
-                  <option>Noch offen</option>
-                  <option>Schulfahrt</option>
-                </select>
-              </label>
-              <p class="rounded-2xl bg-white p-4 text-sm leading-6 text-slate-600">
-                Für individuelle Anfragen beschreiben Sie Route, Zeitplan und Anforderungen bitte so genau wie möglich.
-              </p>
-            </div>
-          </fieldset>
+        <div id="generalBlock" class="mt-6 rounded-3xl bg-slate-50 p-5">
+          <div class="grid gap-4 md:grid-cols-2">
+            <label class="text-sm font-bold">Kundentyp
+              <select id="customerType" class="field mt-2" name="customer_type">
+                <option>Reisebüro / Tour Operator</option>
+                <option>Firma</option>
+                <option>Verein / Organisation</option>
+                <option>Private Gruppe</option>
+                <option>Institution / Schule</option>
+              </select>
+            </label>
+            <label class="text-sm font-bold">Art der Fahrt
+              <select id="tripType" class="field mt-2" name="trip_type">
+                <option>Tagesfahrt</option>
+                <option>Transfer</option>
+                <option>Mehrtagestour</option>
+                <option>Rundreise</option>
+                <option>Event / Shuttle</option>
+                <option>Noch offen</option>
+                <option>Schulfahrt</option>
+              </select>
+            </label>
+          </div>
+        </div>
 
-          <fieldset class="rounded-3xl bg-slate-50 p-6">
-            <legend class="px-2 text-xl font-black">2. Kontakt</legend>
-            <div class="mt-5 grid gap-4">
+        <div class="mt-6 grid gap-5 lg:grid-cols-2">
+          <section class="rounded-3xl bg-slate-50 p-5">
+            <h2 class="text-xl font-black">Kontakt</h2>
+            <div class="mt-4 grid gap-4">
               <label class="text-sm font-bold">Firma / Organisation / Schule
                 <input class="field mt-2" name="organisation" placeholder="Name der Firma, Organisation oder Schule" />
               </label>
@@ -239,39 +207,39 @@
                 <input class="field mt-2" type="email" name="email" placeholder="name@email.at" />
               </label>
             </div>
-          </fieldset>
+          </section>
 
-          <fieldset class="rounded-3xl bg-slate-50 p-6">
-            <legend class="px-2 text-xl font-black">3. Gruppe</legend>
-            <div class="mt-5 grid gap-4">
+          <section class="rounded-3xl bg-slate-50 p-5">
+            <h2 class="text-xl font-black">Gruppe</h2>
+            <div class="mt-4 grid gap-4">
               <div class="grid gap-4 sm:grid-cols-2">
                 <label class="text-sm font-bold">Anzahl Passagiere
                   <input class="field mt-2" type="number" name="passengers" placeholder="z. B. 48" />
                 </label>
-                <label class="text-sm font-bold">Anzahl Reisetage
+                <label id="daysField" class="text-sm font-bold">Anzahl Reisetage
                   <input id="daysInput" class="field mt-2" type="number" name="days" placeholder="z. B. 1 / 3 / 7" />
                 </label>
               </div>
               <label class="text-sm font-bold">Gepäck / Besonderheiten der Gruppe
-                <textarea class="field mt-2 min-h-[110px]" name="group_notes" placeholder="Koffer, Sportausrüstung, Kindergruppe, Rollstuhl, Altersgruppe, Begleitpersonen..."></textarea>
+                <textarea class="field mt-2 min-h-[92px]" name="group_notes" placeholder="Koffer, Sportausrüstung, Kindergruppe, Rollstuhl, Begleitpersonen..."></textarea>
               </label>
             </div>
-          </fieldset>
+          </section>
 
-          <fieldset class="rounded-3xl bg-slate-50 p-6">
-            <legend class="px-2 text-xl font-black">4. Route & Zeiten</legend>
-            <div class="mt-5 grid gap-4">
+          <section class="rounded-3xl bg-slate-50 p-5">
+            <h2 class="text-xl font-black">Route & Zeiten</h2>
+            <div class="mt-4 grid gap-4">
               <label class="text-sm font-bold">Abfahrtsort
-                <input class="field mt-2" name="departure_place" placeholder="Adresse / Stadt / Schule / Hotel / Flughafen" />
+                <input class="field mt-2" name="departure_place" placeholder="Adresse / Schule / Hotel / Flughafen" />
               </label>
-              <label class="text-sm font-bold">Ziel / Route
+              <label id="destinationField" class="text-sm font-bold">Ziel / Route
                 <input id="destinationInput" class="field mt-2" name="destination" placeholder="z. B. Wien – Salzburg – Wien" />
               </label>
               <div class="grid gap-4 sm:grid-cols-2">
-                <label class="text-sm font-bold">Startdatum
+                <label class="text-sm font-bold"><span id="startDateLabel">Startdatum</span>
                   <input class="field mt-2" type="date" name="date_start" />
                 </label>
-                <label class="text-sm font-bold">Enddatum
+                <label id="endDateField" class="text-sm font-bold">Enddatum
                   <input class="field mt-2" type="date" name="date_end" />
                 </label>
               </div>
@@ -283,28 +251,30 @@
                   <input class="field mt-2" type="time" name="time_return" />
                 </label>
               </div>
-              <label class="text-sm font-bold">Route, Stopps, Länder, Tagesprogramm
-                <textarea id="routeDescription" class="field mt-2 min-h-[140px]" name="route_description" placeholder="Bitte beschreiben Sie den Ablauf: Rückfahrt, Zwischenstopps, Wartezeiten, Tagesprogramm..."></textarea>
+              <label class="text-sm font-bold"><span id="routeDescriptionLabel">Route, Stopps, Länder, Tagesprogramm</span>
+                <textarea id="routeDescription" class="field mt-2 min-h-[110px]" name="route_description" placeholder="Bitte beschreiben Sie den Ablauf: Rückfahrt, Zwischenstopps, Wartezeiten, Tagesprogramm..."></textarea>
               </label>
             </div>
-          </fieldset>
+          </section>
 
-          <fieldset class="rounded-3xl bg-slate-50 p-6">
-            <legend class="px-2 text-xl font-black">5. Bus & Anforderungen</legend>
-            <div class="mt-5 grid gap-4">
-              <label class="text-sm font-bold">Gewünschte Busgröße
-                <select class="field mt-2" name="bus_size">
-                  <option>Noch offen – bitte empfehlen</option>
-                  <option>bis 46 Sitze</option>
-                  <option>bis 53 Sitze</option>
-                  <option>bis 55 Sitze</option>
-                  <option>Doppeldecker bis 77 Sitze</option>
-                  <option>mehrere Busse</option>
-                </select>
-              </label>
-              <label class="text-sm font-bold">Anzahl Busse
-                <input class="field mt-2" type="number" name="bus_count" placeholder="z. B. 1" />
-              </label>
+          <section class="rounded-3xl bg-slate-50 p-5">
+            <h2 class="text-xl font-black">Bus & Anforderungen</h2>
+            <div class="mt-4 grid gap-4">
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="text-sm font-bold">Gewünschte Busgröße
+                  <select class="field mt-2" name="bus_size">
+                    <option>Noch offen – bitte empfehlen</option>
+                    <option>bis 46 Sitze</option>
+                    <option>bis 53 Sitze</option>
+                    <option>bis 55 Sitze</option>
+                    <option>Doppeldecker bis 77 Sitze</option>
+                    <option>mehrere Busse</option>
+                  </select>
+                </label>
+                <label class="text-sm font-bold">Anzahl Busse
+                  <input class="field mt-2" type="number" name="bus_count" placeholder="z. B. 1" />
+                </label>
+              </div>
               <div class="grid gap-3 text-sm font-bold sm:grid-cols-2">
                 <label class="flex items-center gap-3 rounded-2xl bg-white p-3"><input type="checkbox" name="req_wc" /> WC</label>
                 <label class="flex items-center gap-3 rounded-2xl bg-white p-3"><input type="checkbox" name="req_usb" /> USB</label>
@@ -314,25 +284,22 @@
                 <label class="flex items-center gap-3 rounded-2xl bg-white p-3"><input type="checkbox" name="req_kitchen" /> Bordküche</label>
               </div>
               <label class="text-sm font-bold">Spezielle Anforderungen
-                <textarea class="field mt-2 min-h-[130px]" name="special_needs" placeholder="z. B. Fahrer bleibt vor Ort, Hotel für Fahrer, Barrierefreiheit, Nachtfahrt, Grenzübertritte..."></textarea>
+                <textarea class="field mt-2 min-h-[92px]" name="special_needs" placeholder="z. B. Barrierefreiheit, Nachtfahrt, Grenzübertritte, Fahrer bleibt vor Ort..."></textarea>
               </label>
             </div>
-          </fieldset>
+          </section>
         </div>
 
-        <div class="mt-8 rounded-3xl bg-slate-900 p-6 text-white">
-          <div class="grid gap-6 lg:grid-cols-[1fr_.55fr] lg:items-center">
+        <div class="mt-6 rounded-3xl bg-slate-900 p-5 text-white">
+          <div class="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <h3 class="text-2xl font-black">Anfrage absenden</h3>
-              <p class="mt-2 text-sm leading-6 text-slate-300">
-                Wir prüfen Route, Zeiten, Gruppengröße und Anforderungen und melden uns mit einem passenden Angebot.
-              </p>
               <label class="mt-4 flex gap-3 text-sm leading-6 text-slate-300">
                 <input type="checkbox" name="privacy_consent" class="mt-1">
                 <span>Ich stimme zu, dass meine Angaben zur Bearbeitung der Anfrage verwendet werden. Weitere Informationen finden Sie in der Datenschutzerklärung.</span>
               </label>
             </div>
-            <button type="submit" class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">
+            <button type="submit" class="rounded-2xl bg-red-700 px-7 py-4 font-black text-white hover:bg-red-800">
               Anfrage senden
             </button>
           </div>
@@ -346,9 +313,14 @@
       const generalBlock = document.getElementById('generalBlock');
       const customerType = document.getElementById('customerType');
       const tripType = document.getElementById('tripType');
+      const destinationField = document.getElementById('destinationField');
       const destinationInput = document.getElementById('destinationInput');
+      const daysField = document.getElementById('daysField');
       const daysInput = document.getElementById('daysInput');
+      const endDateField = document.getElementById('endDateField');
+      const startDateLabel = document.getElementById('startDateLabel');
       const routeDescription = document.getElementById('routeDescription');
+      const routeDescriptionLabel = document.getElementById('routeDescriptionLabel');
 
       const previewTitle = document.getElementById('schoolPreviewTitle');
       const previewPrice53 = document.getElementById('schoolPreviewPrice53');
@@ -365,11 +337,20 @@
 
         schoolBlock.classList.toggle('hidden', !isSchool);
         generalBlock.classList.toggle('hidden', isSchool);
+        destinationField.classList.toggle('hidden', isSchool);
+        daysField.classList.toggle('hidden', isSchool);
+        endDateField.classList.toggle('hidden', isSchool);
+
+        startDateLabel.textContent = isSchool ? 'Gewünschtes Datum' : 'Startdatum';
+        routeDescriptionLabel.textContent = isSchool ? 'Wünsche / Anmerkungen zum Programm' : 'Route, Stopps, Länder, Tagesprogramm';
+        routeDescription.placeholder = isSchool
+          ? 'Optional: besondere Wünsche, gewünschte Aufenthaltsdauer, Begleitpersonen, Pausen, pädagogische Hinweise oder organisatorische Bemerkungen...'
+          : 'Bitte beschreiben Sie den Ablauf: Rückfahrt, Zwischenstopps, Wartezeiten, Tagesprogramm...';
 
         if (isSchool) {
           customerType.value = 'Institution / Schule';
           tripType.value = 'Schulfahrt';
-          if (!daysInput.value) daysInput.value = '1';
+          daysInput.value = '1';
           updateSchoolPreview();
         }
       }
@@ -377,10 +358,11 @@
       function updateSchoolPreview() {
         const option = schoolSelect.options[schoolSelect.selectedIndex];
         if (!option || !option.value) {
-          previewTitle.textContent = 'Bitte Ziel auswählen';
+          previewTitle.textContent = 'Bitte Tour auswählen';
           previewPrice53.textContent = '–';
           previewPrice75.textContent = '–';
           previewMeta.textContent = 'Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.';
+          if (selectedRequestKind() === 'school') destinationInput.value = '';
           return;
         }
 
@@ -399,9 +381,6 @@
 
         if (selectedRequestKind() === 'school') {
           destinationInput.value = title;
-          if (!routeDescription.value.trim()) {
-            routeDescription.value = 'Gewähltes Schulangebot: ' + title + (zone ? ' / Zone ' + zone : '');
-          }
         }
       }
 

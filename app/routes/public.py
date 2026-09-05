@@ -408,7 +408,7 @@ def anfrage():
             "departure_place": "Abfahrtsort",
             "destination": "Ziel / Route",
             "organisation": "Firma / Organisation / Schule",
-            "date_start": "Startdatum",
+            "date_start": "Gewünschtes Datum",
             "passengers": "Anzahl Passagiere",
             "school_destination_slug": "Schulangebot",
             "privacy_consent": "Datenschutzhinweis",
@@ -440,13 +440,11 @@ def anfrage():
         if school_summary:
             route_parts.append(school_summary)
         if base_route_description:
-            route_parts.append("Zusätzliche Angaben:\n" + base_route_description)
+            details_label = "Wünsche / Anmerkungen zum Programm" if request_kind == "school" else "Zusätzliche Angaben"
+            route_parts.append(details_label + ":\n" + base_route_description)
         route_description = "\n\n".join(route_parts).strip() or None
 
         group_notes = request.form.get("group_notes", "").strip()
-        class_level = request.form.get("class_level", "").strip()
-        if class_level:
-            group_notes = (group_notes + "\n" if group_notes else "") + f"Schulstufe / Klasse: {class_level}"
 
         destination_value = request.form.get("destination", "").strip()
         if request_kind == "school" and selected_school:
@@ -462,10 +460,10 @@ def anfrage():
             departure_place=request.form.get("departure_place", "").strip(),
             destination=destination_value,
             date_start=request.form.get("date_start", "").strip() or None,
-            date_end=request.form.get("date_end", "").strip() or None,
+            date_end=None if request_kind == "school" else (request.form.get("date_end", "").strip() or None),
             time_departure=request.form.get("time_departure", "").strip() or None,
             time_return=request.form.get("time_return", "").strip() or None,
-            days=_to_int(request.form.get("days")) or (1 if request_kind == "school" else None),
+            days=1 if request_kind == "school" else _to_int(request.form.get("days")),
             passengers=_to_int(request.form.get("passengers")),
             bus_size=request.form.get("bus_size", "").strip() or None,
             bus_count=_to_int(request.form.get("bus_count")),
