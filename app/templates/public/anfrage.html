@@ -140,9 +140,6 @@
                   >{{ item.title }}</option>
                 {% endfor %}
               </select>
-              <span class="mt-2 block text-xs font-medium leading-5 text-slate-500">
-                Im Menü stehen bewusst nur die Tour-Namen. Die Details erscheinen rechts nach der Auswahl.
-              </span>
             </label>
 
             <div id="schoolPricePreview" class="rounded-3xl bg-white p-5 shadow-sm">
@@ -332,8 +329,37 @@
         return checked ? checked.value : 'general';
       }
 
+      let previousMode = selectedRequestKind();
+      let lastAutoSchoolDestination = '';
+
+      function resetSchoolSelection() {
+        schoolSelect.selectedIndex = 0;
+        previewTitle.textContent = 'Bitte Tour auswählen';
+        previewPrice53.textContent = '–';
+        previewPrice75.textContent = '–';
+        previewMeta.textContent = 'Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.';
+        lastAutoSchoolDestination = '';
+      }
+
+      function clearSchoolAutofillForGeneralMode() {
+        if (lastAutoSchoolDestination && destinationInput.value === lastAutoSchoolDestination) {
+          destinationInput.value = '';
+        }
+
+        if (daysInput.value === '1') {
+          daysInput.value = '';
+        }
+
+        resetSchoolSelection();
+      }
+
       function updateMode() {
-        const isSchool = selectedRequestKind() === 'school';
+        const currentMode = selectedRequestKind();
+        const isSchool = currentMode === 'school';
+
+        if (previousMode === 'school' && currentMode === 'general') {
+          clearSchoolAutofillForGeneralMode();
+        }
 
         schoolBlock.classList.toggle('hidden', !isSchool);
         generalBlock.classList.toggle('hidden', isSchool);
@@ -353,6 +379,8 @@
           daysInput.value = '1';
           updateSchoolPreview();
         }
+
+        previousMode = currentMode;
       }
 
       function updateSchoolPreview() {
@@ -362,7 +390,10 @@
           previewPrice53.textContent = '–';
           previewPrice75.textContent = '–';
           previewMeta.textContent = 'Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.';
-          if (selectedRequestKind() === 'school') destinationInput.value = '';
+          if (selectedRequestKind() === 'school') {
+            destinationInput.value = '';
+            lastAutoSchoolDestination = '';
+          }
           return;
         }
 
@@ -381,6 +412,7 @@
 
         if (selectedRequestKind() === 'school') {
           destinationInput.value = title;
+          lastAutoSchoolDestination = title;
         }
       }
 
