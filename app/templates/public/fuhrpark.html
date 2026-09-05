@@ -70,6 +70,7 @@
           <a href="{{ url_for('public.index') }}#tours" class="rounded-xl px-5 py-3 text-slate-400 cursor-not-allowed">Tours</a>
           <a href="{{ url_for('public.schulen') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Schulen</a>
           <a href="{{ url_for('public.fuhrpark') }}" class="rounded-xl bg-red-700 px-5 py-3 text-white transition">Fuhrpark</a>
+          <a href="{{ url_for('public.anfrage') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Anfrage</a>
           <a href="{{ url_for('public.contact') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Kontakt</a>
         </div>
       </nav>
@@ -88,7 +89,7 @@
             </p>
             <div class="mt-8 flex flex-col gap-3 sm:flex-row">
               <a href="#fahrzeuge" class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">Fahrzeuge ansehen</a>
-              <a href="{{ url_for('public.bus_rental') }}" class="rounded-2xl bg-white px-6 py-4 font-black text-slate-950 hover:bg-slate-100">Bus anfragen</a>
+              <a href="{{ url_for('public.anfrage') }}" class="rounded-2xl bg-white px-6 py-4 font-black text-slate-950 hover:bg-slate-100">Bus anfragen</a>
             </div>
           </div>
 
@@ -167,6 +168,7 @@
           <a href="{{ url_for('public.index') }}#tours" class="text-slate-400 cursor-not-allowed">Tours</a>
           <a href="{{ url_for('public.schulen') }}" class="hover:text-slate-950">Schulen</a>
           <a href="{{ url_for('public.fuhrpark') }}" class="text-red-700">Fuhrpark</a>
+          <a href="{{ url_for('public.anfrage') }}" class="hover:text-slate-950">Anfrage</a>
           <a href="{{ url_for('public.contact') }}" class="hover:text-slate-950">Kontakt</a>
         </div>
         <div class="flex flex-wrap gap-4 font-semibold">
@@ -197,7 +199,7 @@
       </div>
 
       <div class="mt-6 flex flex-col gap-3 sm:flex-row">
-        <a href="{{ url_for('public.bus_rental') }}" class="rounded-2xl bg-red-700 px-6 py-4 text-center font-black text-white hover:bg-red-800">Bus anfragen</a>
+        <a href="{{ url_for('public.anfrage') }}" class="rounded-2xl bg-red-700 px-6 py-4 text-center font-black text-white hover:bg-red-800">Bus anfragen</a>
         <button id="modalCloseBottom" type="button" class="rounded-2xl bg-slate-100 px-6 py-4 font-black hover:bg-slate-200">Schließen</button>
       </div>
     </div>

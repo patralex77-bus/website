@@ -69,7 +69,8 @@
           <a href="{{ url_for('public.index') }}#tours" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Tours</a>
           <a href="{{ url_for('public.schulen') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Schulen</a>
           <a href="{{ url_for('public.fuhrpark') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Fuhrpark</a>
-          <a href="#anfrage" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Kontakt</a>
+          <a href="{{ url_for('public.anfrage') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Anfrage</a>
+          <a href="{{ url_for('public.contact') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Kontakt</a>
         </div>
       </nav>
     </div>
@@ -87,7 +88,7 @@
               Ob Tagesfahrt, Transfer, Rundreise oder mehrtägige Tour: Wir planen die passende Buslösung zu Route, Gruppe und Programm.
             </p>
             <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a href="#anfrage" class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">Individuelles Angebot anfragen</a>
+              <a href="{{ url_for('public.anfrage') }}" class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">Individuelles Angebot anfragen</a>
               <a href="#infos" class="rounded-2xl bg-white px-6 py-4 font-black text-slate-950 hover:bg-slate-100">Was wir benötigen</a>
             </div>
           </div>
@@ -211,150 +212,30 @@
       </div>
     </section>
 
-    <section id="anfrage" class="mx-auto max-w-[1500px] px-4 py-14 sm:px-6 lg:px-8">
-      <div class="mb-8 max-w-4xl">
-        <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Anfrageformular</p>
-        <h2 class="mt-3 text-3xl font-black tracking-tight">Individuelles Busangebot anfragen</h2>
-        <p class="mt-3 text-slate-600">
-          Bitte füllen Sie die wichtigsten Punkte aus. Fehlende Details können später ergänzt werden – je vollständiger die Anfrage, desto genauer das Angebot.
-        </p>
-      </div>
-
-      <form action="{{ url_for('public.bus_rental') }}" method="post" class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-        <div class="grid gap-8 lg:grid-cols-2">
-          <fieldset class="rounded-3xl bg-slate-50 p-6">
-            <legend class="px-2 text-xl font-black">1. Kontakt</legend>
-            <div class="mt-5 grid gap-4">
-              <label class="text-sm font-bold">Kundentyp
-                <select class="field mt-2" name="customer_type">
-                  <option>Reisebüro / Tour Operator</option>
-                  <option>Firma</option>
-                  <option>Verein / Organisation</option>
-                  <option>Private Gruppe</option>
-                  <option>Institution / Schule</option>
-                </select>
-              </label>
-              <label class="text-sm font-bold">Firma / Organisation
-                <input class="field mt-2" name="organisation" placeholder="Name der Firma / Organisation" />
-              </label>
-              <div class="grid gap-4 sm:grid-cols-2">
-                <label class="text-sm font-bold">Ansprechperson
-                  <input class="field mt-2" name="contact_name" placeholder="Vor- und Nachname" />
-                </label>
-                <label class="text-sm font-bold">Telefon
-                  <input class="field mt-2" name="phone" placeholder="+43 ..." />
-                </label>
-              </div>
-              <label class="text-sm font-bold">E-Mail
-                <input class="field mt-2" type="email" name="email" placeholder="name@email.at" />
-              </label>
-            </div>
-          </fieldset>
-
-          <fieldset class="rounded-3xl bg-slate-50 p-6">
-            <legend class="px-2 text-xl font-black">2. Reiseart & Gruppe</legend>
-            <div class="mt-5 grid gap-4">
-              <label class="text-sm font-bold">Art der Fahrt
-                <select class="field mt-2" name="trip_type">
-                  <option>Tagesfahrt</option>
-                  <option>Transfer</option>
-                  <option>Mehrtagestour</option>
-                  <option>Rundreise</option>
-                  <option>Event / Shuttle</option>
-                  <option>Noch offen</option>
-                </select>
-              </label>
-              <div class="grid gap-4 sm:grid-cols-2">
-                <label class="text-sm font-bold">Anzahl Passagiere
-                  <input class="field mt-2" type="number" name="passengers" placeholder="z. B. 48" />
-                </label>
-                <label class="text-sm font-bold">Anzahl Reisetage
-                  <input class="field mt-2" type="number" name="days" placeholder="z. B. 1 / 3 / 7" />
-                </label>
-              </div>
-              <label class="text-sm font-bold">Gepäck / Besonderheiten der Gruppe
-                <textarea class="field mt-2 min-h-[110px]" name="group_notes" placeholder="Koffer, Sportausrüstung, Kindergruppe, Senior:innen, Rollstuhl, viel Gepäck..."></textarea>
-              </label>
-            </div>
-          </fieldset>
-
-          <fieldset class="rounded-3xl bg-slate-50 p-6">
-            <legend class="px-2 text-xl font-black">3. Route & Zeiten</legend>
-            <div class="mt-5 grid gap-4">
-              <label class="text-sm font-bold">Abfahrtsort
-                <input class="field mt-2" name="departure_place" placeholder="Adresse / Stadt / Hotel / Flughafen" />
-              </label>
-              <label class="text-sm font-bold">Ziel / Route
-                <input class="field mt-2" name="destination" placeholder="z. B. Wien – Salzburg – München – Wien" />
-              </label>
-              <div class="grid gap-4 sm:grid-cols-2">
-                <label class="text-sm font-bold">Startdatum
-                  <input class="field mt-2" type="date" name="date_start" />
-                </label>
-                <label class="text-sm font-bold">Enddatum
-                  <input class="field mt-2" type="date" name="date_end" />
-                </label>
-              </div>
-              <div class="grid gap-4 sm:grid-cols-2">
-                <label class="text-sm font-bold">Abfahrtszeit
-                  <input class="field mt-2" type="time" name="time_departure" />
-                </label>
-                <label class="text-sm font-bold">Rückkehr / Ende
-                  <input class="field mt-2" type="time" name="time_return" />
-                </label>
-              </div>
-              <label class="text-sm font-bold">Route, Stopps, Länder, Tagesprogramm
-                <textarea class="field mt-2 min-h-[140px]" name="route_description" placeholder="Bitte beschreiben Sie den Ablauf so genau wie möglich: Zwischenstopps, Wartezeiten, Tagesetappen, Länder, geplante Besichtigungen..."></textarea>
-              </label>
-            </div>
-          </fieldset>
-
-          <fieldset class="rounded-3xl bg-slate-50 p-6">
-            <legend class="px-2 text-xl font-black">4. Bus & Anforderungen</legend>
-            <div class="mt-5 grid gap-4">
-              <label class="text-sm font-bold">Gewünschte Busgröße
-                <select class="field mt-2" name="bus_size">
-                  <option>Noch offen – bitte empfehlen</option>
-                  <option>bis 46 Sitze</option>
-                  <option>bis 53 Sitze</option>
-                  <option>bis 55 Sitze</option>
-                  <option>Doppeldecker bis 77 Sitze</option>
-                  <option>mehrere Busse</option>
-                </select>
-              </label>
-              <label class="text-sm font-bold">Anzahl Busse
-                <input class="field mt-2" type="number" name="bus_count" placeholder="z. B. 1" />
-              </label>
-              <div class="grid gap-3 text-sm font-bold sm:grid-cols-2">
-                <label class="flex items-center gap-3 rounded-2xl bg-white p-3"><input type="checkbox" name="req_wc" /> WC</label>
-                <label class="flex items-center gap-3 rounded-2xl bg-white p-3"><input type="checkbox" name="req_usb" /> USB</label>
-                <label class="flex items-center gap-3 rounded-2xl bg-white p-3"><input type="checkbox" name="req_power" /> 220V</label>
-                <label class="flex items-center gap-3 rounded-2xl bg-white p-3"><input type="checkbox" name="req_wifi" /> WLAN</label>
-                <label class="flex items-center gap-3 rounded-2xl bg-white p-3"><input type="checkbox" name="req_doubledecker" /> Doppeldecker</label>
-                <label class="flex items-center gap-3 rounded-2xl bg-white p-3"><input type="checkbox" name="req_kitchen" /> Bordküche</label>
-              </div>
-              <label class="text-sm font-bold">Spezielle Anforderungen
-                <textarea class="field mt-2 min-h-[140px]" name="special_needs" placeholder="z. B. bestimmte Buskategorie, Fahrer muss vor Ort bleiben, Hotel für Fahrer, Grenzübertritte, Nachtfahrt, besondere Gepäckmenge..."></textarea>
-              </label>
-            </div>
-          </fieldset>
-        </div>
-
-        <div class="mt-8 rounded-3xl bg-slate-900 p-6 text-white">
-          <div class="grid gap-6 lg:grid-cols-[1fr_.55fr] lg:items-center">
-            <div>
-              <h3 class="text-2xl font-black">Anfrage absenden</h3>
-              <p class="mt-2 text-sm leading-6 text-slate-300">
-                Senden Sie uns Ihre Anfrage. Wir prüfen Route, Zeiten, Gruppengröße und Anforderungen und melden uns mit einem passenden Angebot.
-              </p>
-            </div>
-            <button type="submit" class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">
-              Anfrage senden
-            </button>
+    <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <div class="rounded-[2rem] bg-slate-900 p-8 text-white shadow-sm lg:p-10">
+        <div class="grid gap-8 lg:grid-cols-[1fr_.45fr] lg:items-center">
+          <div>
+            <p class="text-sm font-black uppercase tracking-[.18em] text-red-300">Anfrage</p>
+            <h2 class="mt-3 text-3xl font-black tracking-tight">Formular auf eigener Seite</h2>
+            <p class="mt-4 max-w-3xl leading-8 text-slate-300">
+              Für konkrete Anfragen nutzen Sie bitte unser separates Anfrageformular.
+              Dort können Reisebüros, Firmen, Vereine, private Gruppen und Schulen ihre Reisedaten strukturiert übermitteln.
+            </p>
+            <p class="mt-3 max-w-3xl leading-8 text-slate-300">
+              Schulen können dort direkt ein Ziel aus unseren Schulangeboten auswählen und sehen sofort die passende Preiszone mit Richtpreis.
+            </p>
+          </div>
+          <div class="grid gap-3">
+            <a href="{{ url_for('public.anfrage') }}" class="rounded-2xl bg-red-700 px-6 py-4 text-center font-black text-white hover:bg-red-800">
+              Anfrageformular öffnen
+            </a>
+            <a href="{{ url_for('public.anfrage', type='school') }}" class="rounded-2xl bg-white px-6 py-4 text-center font-black text-slate-950 hover:bg-slate-100">
+              Schulfahrt anfragen
+            </a>
           </div>
         </div>
-      </form>
+      </div>
     </section>
   </main>
 
@@ -367,7 +248,8 @@
           <a href="{{ url_for('public.index') }}#tours" class="hover:text-slate-950">Tours</a>
           <a href="{{ url_for('public.schulen') }}" class="hover:text-slate-950">Schulen</a>
           <a href="{{ url_for('public.fuhrpark') }}" class="hover:text-slate-950">Fuhrpark</a>
-          <a href="#anfrage" class="hover:text-slate-950">Kontakt</a>
+          <a href="{{ url_for('public.anfrage') }}" class="hover:text-slate-950">Anfrage</a>
+          <a href="{{ url_for('public.contact') }}" class="hover:text-slate-950">Kontakt</a>
         </div>
         <div class="flex flex-wrap gap-4 font-semibold">
           <a href="{{ url_for('public.impressum') }}" class="hover:text-slate-950">Impressum</a>

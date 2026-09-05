@@ -53,6 +53,7 @@ def sitemap_xml():
     static_pages = [
         {"loc": "/", "priority": "1.0", "changefreq": "weekly"},
         {"loc": "/bus-rental", "priority": "0.9", "changefreq": "monthly"},
+        {"loc": "/anfrage", "priority": "0.95", "changefreq": "monthly"},
         {"loc": "/schulen", "priority": "0.9", "changefreq": "monthly"},
         {"loc": "/fuhrpark", "priority": "0.8", "changefreq": "monthly"},
         {"loc": "/aktuelles-kundenstimmen", "priority": "0.7", "changefreq": "weekly"},
@@ -302,46 +303,178 @@ def legacy_agb():
     return redirect(url_for("public.agb"), code=302)
 
 
+def _to_int(value):
+    try:
+        parsed = int(value or 0)
+        return parsed or None
+    except (TypeError, ValueError):
+        return None
+
+
+def _format_euro(value) -> str:
+    if value in (None, ""):
+        return ""
+    try:
+        return f"ab {float(value):.0f} €"
+    except (TypeError, ValueError):
+        return ""
+
+
+def _school_offer_options():
+    destinations = (
+        SchoolDestination.query
+        .filter_by(is_active=True)
+        .order_by(SchoolDestination.zone.asc(), SchoolDestination.sort_order.asc(), SchoolDestination.title.asc())
+        .all()
+    )
+
+    return [
+        {
+            "slug": d.slug,
+            "title": d.title,
+            "zone": d.zone,
+            "category": d.category,
+            "travel_time": d.travel_time or "",
+            "description": d.short_description or "",
+            "price_53_label": _format_euro(d.price_53),
+            "price_75_label": _format_euro(d.price_75),
+        }
+        for d in destinations
+    ]
+
+
+def _school_offer_summary(destination: SchoolDestination | None) -> str:
+    if not destination:
+        return ""
+
+    lines = [
+        "Gewähltes Schulangebot:",
+        f"- Ziel: {destination.title}",
+        f"- Zone: {destination.zone}",
+    ]
+
+    if destination.category:
+        lines.append(f"- Kategorie: {destination.category}")
+    if destination.travel_time:
+        lines.append(f"- Fahrtzeit: {destination.travel_time}")
+    if destination.price_53:
+        lines.append(f"- Richtpreis 53 Plätze: {_format_euro(destination.price_53)}")
+    if destination.price_75:
+        lines.append(f"- Richtpreis Doppeldecker: {_format_euro(destination.price_75)}")
+    if destination.short_description:
+        lines.append(f"- Beschreibung: {destination.short_description}")
+
+    return "\n".join(lines)
+
+
 @public_bp.route("/bus-rental", methods=["GET", "POST"])
 def bus_rental():
     if request.method == "POST":
+        return redirect(url_for("public.anfrage"), code=303)
+    return render_template("public/bus_rental.html")
+
+
+@public_bp.route("/anfrage", methods=["GET", "POST"])
+def anfrage():
+    request_kind = request.args.get("type", "general").strip()
+    if request_kind not in {"school", "general"}:
+        request_kind = "general"
+
+    selected_school_slug = (
+        request.args.get("school")
+        or request.args.get("destination")
+        or ""
+    ).strip()
+
+    if request.method == "POST":
         if not validate_csrf_token(request.form.get("_csrf_token")):
             flash("Ihre Sitzung ist abgelaufen. Bitte versuchen Sie es erneut.", "error")
-            return redirect(url_for("public.bus_rental"))
+            return redirect(url_for("public.anfrage"))
 
-        required = ["customer_type", "contact_name", "email", "trip_type", "departure_place", "destination"]
-        errors = [f"Bitte füllen Sie das Feld {field} aus." for field in required if not request.form.get(field, "").strip()]
+        request_kind = request.form.get("request_kind", "general").strip()
+        if request_kind not in {"school", "general"}:
+            request_kind = "general"
 
-        def to_int(value):
-            try:
-                return int(value or 0) or None
-            except ValueError:
-                return None
+        selected_school_slug = request.form.get("school_destination_slug", "").strip()
+        selected_school = None
+        if selected_school_slug:
+            selected_school = SchoolDestination.query.filter_by(slug=selected_school_slug, is_active=True).first()
+
+        labels = {
+            "customer_type": "Kundentyp",
+            "contact_name": "Ansprechperson",
+            "email": "E-Mail",
+            "trip_type": "Art der Fahrt",
+            "departure_place": "Abfahrtsort",
+            "destination": "Ziel / Route",
+            "organisation": "Firma / Organisation / Schule",
+            "date_start": "Startdatum",
+            "passengers": "Anzahl Passagiere",
+            "school_destination_slug": "Schulangebot",
+            "privacy_consent": "Datenschutzhinweis",
+        }
+
+        required = ["contact_name", "email", "departure_place", "privacy_consent"]
+        if request_kind == "school":
+            required.extend(["organisation", "date_start", "passengers", "school_destination_slug"])
+        else:
+            required.extend(["customer_type", "trip_type", "destination"])
+
+        errors = [
+            f"Bitte füllen Sie das Feld {labels.get(field, field)} aus."
+            for field in required
+            if not request.form.get(field, "").strip()
+        ]
+
+        if request_kind == "school" and selected_school_slug and not selected_school:
+            errors.append("Das ausgewählte Schulangebot konnte nicht gefunden werden.")
 
         if errors:
             for error in errors:
                 flash(error, "error")
-            return redirect(url_for("public.bus_rental"))
+            return redirect(url_for("public.anfrage", type=request_kind, school=selected_school_slug))
+
+        base_route_description = request.form.get("route_description", "").strip()
+        school_summary = _school_offer_summary(selected_school)
+        route_parts = []
+        if school_summary:
+            route_parts.append(school_summary)
+        if base_route_description:
+            route_parts.append("Zusätzliche Angaben:
+" + base_route_description)
+        route_description = "
+
+".join(route_parts).strip() or None
+
+        group_notes = request.form.get("group_notes", "").strip()
+        class_level = request.form.get("class_level", "").strip()
+        if class_level:
+            group_notes = (group_notes + "
+" if group_notes else "") + f"Schulstufe / Klasse: {class_level}"
+
+        destination_value = request.form.get("destination", "").strip()
+        if request_kind == "school" and selected_school:
+            destination_value = selected_school.title
 
         inquiry = BusRentalRequest(
-            customer_type=request.form.get("customer_type", "").strip(),
+            customer_type="Institution / Schule" if request_kind == "school" else request.form.get("customer_type", "").strip(),
             organisation=request.form.get("organisation", "").strip() or None,
             contact_name=request.form.get("contact_name", "").strip(),
             email=request.form.get("email", "").strip(),
             phone=request.form.get("phone", "").strip() or None,
-            trip_type=request.form.get("trip_type", "").strip(),
+            trip_type="Schulfahrt" if request_kind == "school" else request.form.get("trip_type", "").strip(),
             departure_place=request.form.get("departure_place", "").strip(),
-            destination=request.form.get("destination", "").strip(),
+            destination=destination_value,
             date_start=request.form.get("date_start", "").strip() or None,
             date_end=request.form.get("date_end", "").strip() or None,
             time_departure=request.form.get("time_departure", "").strip() or None,
             time_return=request.form.get("time_return", "").strip() or None,
-            days=to_int(request.form.get("days")),
-            passengers=to_int(request.form.get("passengers")),
+            days=_to_int(request.form.get("days")) or (1 if request_kind == "school" else None),
+            passengers=_to_int(request.form.get("passengers")),
             bus_size=request.form.get("bus_size", "").strip() or None,
-            bus_count=to_int(request.form.get("bus_count")),
-            route_description=request.form.get("route_description", "").strip() or None,
-            group_notes=request.form.get("group_notes", "").strip() or None,
+            bus_count=_to_int(request.form.get("bus_count")),
+            route_description=route_description,
+            group_notes=group_notes or None,
             special_needs=request.form.get("special_needs", "").strip() or None,
             req_wc=bool(request.form.get("req_wc")),
             req_usb=bool(request.form.get("req_usb")),
@@ -358,7 +491,12 @@ def bus_rental():
 
         return render_template("public/bus_rental_thank_you.html")
 
-    return render_template("public/bus_rental.html")
+    return render_template(
+        "public/anfrage.html",
+        school_destinations=_school_offer_options(),
+        selected_school_slug=selected_school_slug,
+        request_kind=request_kind,
+    )
 
 
 @public_bp.post("/bewertungen")

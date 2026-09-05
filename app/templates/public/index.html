@@ -102,6 +102,7 @@
           <a href="{{ url_for('public.index') }}#tours" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Tours</a>
           <a href="{{ url_for('public.schulen') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Schulen</a>
           <a href="{{ url_for('public.fuhrpark') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Fuhrpark</a>
+          <a href="{{ url_for('public.anfrage') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Anfrage</a>
           <a href="{{ url_for('public.contact') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Kontakt</a>
         </div>
       </nav>
@@ -122,9 +123,7 @@
           Wählen Sie eine fertige Tour oder senden Sie uns Ihre Wunschroute.
         </p>
         <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-          <a href="{{ url_for('public.contact') }}" class="rounded-2xl bg-red-700 px-6 py-4 text-center font-black text-white shadow-lg hover:bg-red-800">
-            Unverbindlich anfragen
-          </a>
+          <a href="{{ url_for('public.anfrage') }}" class="rounded-2xl bg-red-700 px-6 py-4 text-center font-black text-white shadow-lg hover:bg-red-800">Unverbindlich anfragen</a>
           <a href="{{ url_for('public.index') }}#tours" class="rounded-2xl bg-white px-6 py-4 text-center font-black text-slate-950 shadow-lg hover:bg-slate-100">
             Touren ansehen
           </a>
@@ -154,9 +153,7 @@
             <li>✓ Österreich & Europa</li>
             <li>✓ Flexible Routen und Zwischenstopps</li>
           </ul>
-          <a href="{{ url_for('public.contact') }}" class="mt-6 rounded-2xl bg-slate-900 px-5 py-3 text-center font-bold text-white hover:bg-slate-800">
-            Bus anfragen
-          </a>
+          <a href="{{ url_for('public.anfrage') }}" class="mt-6 rounded-2xl bg-slate-900 px-5 py-3 text-center font-bold text-white hover:bg-slate-800">Bus anfragen</a>
         </article>
 
         <article id="tours" class="flex min-h-[390px] flex-col rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
@@ -251,9 +248,7 @@
             <p class="mt-5 text-lg leading-8 text-slate-600">
               Sie benötigen einen Bus? Wir bieten passende Fahrzeuge für Gruppen jeder Größe – bis zu 69 Personen.
             </p>
-            <a href="{{ url_for('public.contact') }}" class="mt-7 inline-flex rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">
-              Fuhrpark anfragen
-            </a>
+            <a href="{{ url_for('public.anfrage') }}" class="mt-7 inline-flex rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">Fuhrpark anfragen</a>
           </div>
 
           <div class="grid gap-5 sm:grid-cols-3">
@@ -352,9 +347,7 @@
                 <textarea class="mt-2 min-h-32 w-full rounded-xl border border-slate-300 px-4 py-3" placeholder="Rückfahrt, Zwischenstopps, Gepäck, besondere Wünsche..."></textarea>
               </label>
             </div>
-            <a href="{{ url_for('public.bus_rental') }}" class="mt-5 block w-full rounded-2xl bg-red-700 px-6 py-4 text-center font-black text-white hover:bg-red-800">
-              Anfrage senden
-            </a>
+            <a href="{{ url_for('public.anfrage') }}" class="mt-5 block w-full rounded-2xl bg-red-700 px-6 py-4 text-center font-black text-white hover:bg-red-800">Anfrage senden</a>
             <p class="mt-4 text-center text-xs text-slate-500">
               Wir prüfen Ihre Anfrage und melden uns mit einem passenden Vorschlag.
             </p>
@@ -376,6 +369,7 @@
           <a href="{{ url_for('public.index') }}#tours" class="hover:text-slate-950">Tours</a>
           <a href="{{ url_for('public.schulen') }}" class="hover:text-slate-950">Schulen</a>
           <a href="{{ url_for('public.fuhrpark') }}" class="hover:text-slate-950">Fuhrpark</a>
+          <a href="{{ url_for('public.anfrage') }}" class="hover:text-slate-950">Anfrage</a>
           <a href="{{ url_for('public.contact') }}" class="hover:text-slate-950">Kontakt</a>
         </div>
         <div class="flex flex-wrap gap-4 font-semibold">
