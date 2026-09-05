@@ -440,17 +440,13 @@ def anfrage():
         if school_summary:
             route_parts.append(school_summary)
         if base_route_description:
-            route_parts.append("Zusätzliche Angaben:
-" + base_route_description)
-        route_description = "
-
-".join(route_parts).strip() or None
+            route_parts.append("Zusätzliche Angaben:\n" + base_route_description)
+        route_description = "\n\n".join(route_parts).strip() or None
 
         group_notes = request.form.get("group_notes", "").strip()
         class_level = request.form.get("class_level", "").strip()
         if class_level:
-            group_notes = (group_notes + "
-" if group_notes else "") + f"Schulstufe / Klasse: {class_level}"
+            group_notes = (group_notes + "\n" if group_notes else "") + f"Schulstufe / Klasse: {class_level}"
 
         destination_value = request.form.get("destination", "").strip()
         if request_kind == "school" and selected_school:
