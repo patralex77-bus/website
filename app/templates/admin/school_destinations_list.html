@@ -1,1 +1,41 @@
-{% extends "admin/base_admin.html" %}{% block content %}<div class="mb-8 flex justify-between items-end"><h1 class="text-4xl font-black">Schulen Destinationen</h1><a href="{{ url_for('admin.school_destination_new') }}" class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white">Neue Destination</a></div><div class="grid gap-5">{% for item in items %}<div class="rounded-[2rem] bg-white p-6 shadow-sm"><div class="flex justify-between gap-4"><div><h2 class="text-2xl font-black">{{ item.title }}</h2><div class="text-sm text-slate-500">Zone {{ item.zone }} · {{ item.category }} · {% if item.is_active %}aktiv{% else %}inaktiv{% endif %}</div><p class="mt-2 text-slate-600">{{ item.short_description }}</p></div><div class="flex gap-2"><a href="{{ url_for('admin.school_destination_edit', item_id=item.id) }}" class="rounded-xl bg-slate-900 px-4 py-2 font-bold text-white">Edit</a><form method="post" action="{{ url_for('admin.school_destination_delete', item_id=item.id) }}"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="rounded-xl bg-red-50 px-4 py-2 font-bold text-red-700">Delete</button></form></div></div></div>{% else %}<div class="rounded-[2rem] bg-white p-8">Keine Destinationen.</div>{% endfor %}</div>{% endblock %}
+{% extends "admin/base_admin.html" %}
+{% block title %}Schulen Destinationen – Admin{% endblock %}
+{% block content %}
+<div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+  <div>
+    <h1 class="text-4xl font-black">Schulen Destinationen</h1>
+    <p class="mt-2 text-slate-600">Inhalte und einzelne Destinationen bearbeiten.</p>
+  </div>
+  <div class="flex flex-wrap gap-3">
+    <a href="{{ url_for('admin.school_pricing_bulk') }}" class="rounded-2xl bg-slate-900 px-6 py-4 font-black text-white">Schulpreise Tabelle</a>
+    <a href="{{ url_for('admin.school_destination_new') }}" class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white">Neue Destination</a>
+  </div>
+</div>
+
+<div class="grid gap-5">
+  {% for item in items %}
+    <div class="rounded-[2rem] bg-white p-6 shadow-sm">
+      <div class="flex flex-col justify-between gap-4 lg:flex-row">
+        <div>
+          <h2 class="text-2xl font-black">{{ item.title }}</h2>
+          <div class="mt-1 text-sm text-slate-500">
+            Zone {{ item.zone }} · {{ item.category }} · {% if item.is_active %}aktiv{% else %}inaktiv{% endif %}
+            {% if item.price_53 %} · 53 Plätze: {{ item.price_53 }} €{% endif %}
+            {% if item.price_75 %} · Doppeldecker: {{ item.price_75 }} €{% endif %}
+          </div>
+          <p class="mt-2 text-slate-600">{{ item.short_description }}</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="{{ url_for('admin.school_destination_edit', item_id=item.id) }}" class="rounded-xl bg-slate-900 px-4 py-2 font-bold text-white">Edit</a>
+          <form method="post" action="{{ url_for('admin.school_destination_delete', item_id=item.id) }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button class="rounded-xl bg-red-50 px-4 py-2 font-bold text-red-700">Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="rounded-[2rem] bg-white p-8">Keine Destinationen.</div>
+  {% endfor %}
+</div>
+{% endblock %}

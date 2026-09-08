@@ -133,6 +133,25 @@ class SchoolDestination(db.Model):
     updated_at = db.Column(db.DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
 
     images = db.relationship("DestinationImage", back_populates="destination", cascade="all, delete-orphan")
+    pricing = db.relationship("SchoolDestinationPricing", back_populates="destination", uselist=False, cascade="all, delete-orphan")
+
+
+class SchoolDestinationPricing(db.Model):
+    __tablename__ = "school_destination_pricing"
+
+    id = db.Column(db.Integer, primary_key=True)
+    destination_id = db.Column(db.Integer, db.ForeignKey("school_destinations.id"), unique=True, nullable=False, index=True)
+
+    drive_minutes_one_way = db.Column(db.Integer, nullable=True)
+    stay_minutes = db.Column(db.Integer, nullable=True)
+    price_profile_53_id = db.Column(db.Integer, db.ForeignKey("pricing_profiles.id"), nullable=True)
+    price_profile_75_id = db.Column(db.Integer, db.ForeignKey("pricing_profiles.id"), nullable=True)
+
+    updated_at = db.Column(db.DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)
+
+    destination = db.relationship("SchoolDestination", back_populates="pricing")
+    profile_53 = db.relationship("PricingProfile", foreign_keys=[price_profile_53_id])
+    profile_75 = db.relationship("PricingProfile", foreign_keys=[price_profile_75_id])
 
 
 class DestinationImage(db.Model):
@@ -156,11 +175,11 @@ class FleetVehicle(db.Model):
     seats = db.Column(db.Integer, nullable=False)
     quantity = db.Column(db.Integer, default=1, nullable=False)
     category = db.Column(db.String(100), nullable=False, index=True)
-    star_rating = db.Column(db.String(20), default="4★", nullable=True)
+    star_rating = db.Column(db.String(120), default="4★", nullable=True)
     description = db.Column(db.Text, nullable=True)
-    suitable_for = db.Column(db.String(300), nullable=True)
+    suitable_for = db.Column(db.String(500), nullable=True)
     main_image = db.Column(db.String(500), nullable=True)
-    alt_text = db.Column(db.String(255), nullable=True)
+    alt_text = db.Column(db.String(500), nullable=True)
 
     ac = db.Column(db.Boolean, default=True, nullable=False)
     wc = db.Column(db.Boolean, default=True, nullable=False)

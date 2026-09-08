@@ -11,7 +11,7 @@ from werkzeug.security import check_password_hash
 
 from ..extensions import db
 from ..models import (
-    AdminUser, BlogPost, CustomerReview, MediaFile, SchoolDestination,
+    AdminUser, BlogPost, CustomerReview, MediaFile, SchoolDestination, SchoolDestinationPricing,
     FleetVehicle, BusRentalRequest, PricingProfile, PricingCalculation, utcnow
 )
 from ..utils.csrf import validate_csrf_token
@@ -245,12 +245,182 @@ def review_detail(review_id: int):
     return render_template("admin/review_detail.html", review=review)
 
 
+# ---------- School pricing helpers ----------
+def school_public_price(result):
+    return Decimal(result.gross_total).quantize(Decimal("1"))
+
+
+def profile_to_dict(profile: PricingProfile | None) -> dict:
+    if not profile:
+        return {}
+    return {
+        "id": profile.id,
+        "name": profile.name,
+        "price_per_km": float(profile.price_per_km or 0),
+        "hourly_rate": float(profile.hourly_rate or 0),
+        "waiting_hourly_rate": float(profile.waiting_hourly_rate or 0),
+        "minimum_day_rate": float(profile.minimum_day_rate or 0),
+        "vat_percent": float(profile.vat_percent or 0),
+    }
+
+
+def default_school_profile(seat_hint: str):
+    profiles = PricingProfile.query.filter_by(is_active=True).order_by(PricingProfile.name.asc()).all()
+    hint = seat_hint.lower()
+
+    for profile in profiles:
+        haystack = f"{profile.name} {profile.bus_category}".lower()
+        if hint in haystack:
+            return profile
+
+    if hint in {"77", "75", "doppeldecker"}:
+        for profile in profiles:
+            haystack = f"{profile.name} {profile.bus_category}".lower()
+            if "doppel" in haystack or "77" in haystack or "75" in haystack:
+                return profile
+
+    return profiles[0] if profiles else None
+
+
+def calculate_school_destination_price(profile: PricingProfile | None, distance_km_one_way, drive_minutes_one_way, stay_minutes):
+    if not profile:
+        return None
+    if distance_km_one_way in (None, "") or drive_minutes_one_way in (None, ""):
+        return None
+
+    distance = float(distance_km_one_way or 0)
+    drive_minutes = int(drive_minutes_one_way or 0)
+    stay_minutes = int(stay_minutes or 0)
+
+    if distance <= 0 or drive_minutes <= 0:
+        return None
+
+    result = calculate_price(
+        profile,
+        total_km=distance * 2,
+        operating_hours=(drive_minutes * 2) / 60,
+        waiting_hours=stay_minutes / 60,
+        days=1,
+        tolls=0,
+        parking=0,
+        driver_hotel_cost=0,
+        is_international=False,
+        is_weekend=False,
+        is_holiday=False,
+        is_night=False,
+    )
+    return school_public_price(result)
+
+
+def school_pricing_row(destination: SchoolDestination, profile_53: PricingProfile | None, profile_75: PricingProfile | None) -> dict:
+    pricing = destination.pricing
+
+    drive_minutes = pricing.drive_minutes_one_way if pricing else None
+    stay_minutes = pricing.stay_minutes if pricing else 240
+
+    calculated_53 = calculate_school_destination_price(profile_53, destination.distance_km, drive_minutes, stay_minutes)
+    calculated_75 = calculate_school_destination_price(profile_75, destination.distance_km, drive_minutes, stay_minutes)
+
+    return {
+        "item": destination,
+        "pricing": pricing,
+        "distance_km": destination.distance_km,
+        "drive_minutes_one_way": drive_minutes,
+        "stay_minutes": stay_minutes,
+        "calculated_53": calculated_53,
+        "calculated_75": calculated_75,
+    }
+
+
+
 # ---------- Schools ----------
 @admin_bp.route("/school-destinations")
 @login_required
 def school_destinations_list():
     items = SchoolDestination.query.order_by(SchoolDestination.zone.asc(), SchoolDestination.sort_order.asc()).all()
     return render_template("admin/school_destinations_list.html", items=items)
+
+
+@admin_bp.route("/school-pricing", methods=["GET", "POST"])
+@login_required
+def school_pricing_bulk():
+    if request.method == "POST":
+        if not require_csrf():
+            return redirect(url_for("admin.school_pricing_bulk"))
+
+        profile_53_id = to_int(request.form.get("profile_53_id"), None)
+        profile_75_id = to_int(request.form.get("profile_75_id"), None)
+        profile_53 = PricingProfile.query.get(profile_53_id) if profile_53_id else None
+        profile_75 = PricingProfile.query.get(profile_75_id) if profile_75_id else None
+
+        items = SchoolDestination.query.order_by(
+            SchoolDestination.zone.asc(),
+            SchoolDestination.sort_order.asc(),
+            SchoolDestination.title.asc(),
+        ).all()
+
+        updated = 0
+        calculated = 0
+
+        for item in items:
+            prefix = f"row_{item.id}_"
+            if not request.form.get(prefix + "present"):
+                continue
+
+            item.distance_km = to_float(request.form.get(prefix + "distance_km"), None)
+
+            pricing = item.pricing
+            if pricing is None:
+                pricing = SchoolDestinationPricing(destination=item)
+                db.session.add(pricing)
+
+            pricing.drive_minutes_one_way = to_int(request.form.get(prefix + "drive_minutes_one_way"), None)
+            pricing.stay_minutes = to_int(request.form.get(prefix + "stay_minutes"), 240)
+            pricing.price_profile_53_id = profile_53.id if profile_53 else None
+            pricing.price_profile_75_id = profile_75.id if profile_75 else None
+
+            price_53 = calculate_school_destination_price(profile_53, item.distance_km, pricing.drive_minutes_one_way, pricing.stay_minutes)
+            price_75 = calculate_school_destination_price(profile_75, item.distance_km, pricing.drive_minutes_one_way, pricing.stay_minutes)
+
+            if price_53 is not None:
+                item.price_53 = price_53
+                calculated += 1
+            if price_75 is not None:
+                item.price_75 = price_75
+                calculated += 1
+
+            updated += 1
+
+        db.session.commit()
+        flash(f"Schulpreise gespeichert. {updated} Destinationen aktualisiert, {calculated} Preise berechnet.", "success")
+        return redirect(url_for("admin.school_pricing_bulk", profile_53_id=profile_53_id or "", profile_75_id=profile_75_id or ""))
+
+    profiles = PricingProfile.query.filter_by(is_active=True).order_by(PricingProfile.name.asc()).all()
+
+    profile_53_id = to_int(request.args.get("profile_53_id"), None)
+    profile_75_id = to_int(request.args.get("profile_75_id"), None)
+
+    profile_53 = PricingProfile.query.get(profile_53_id) if profile_53_id else default_school_profile("53")
+    profile_75 = PricingProfile.query.get(profile_75_id) if profile_75_id else default_school_profile("doppeldecker")
+
+    items = SchoolDestination.query.order_by(
+        SchoolDestination.zone.asc(),
+        SchoolDestination.sort_order.asc(),
+        SchoolDestination.title.asc(),
+    ).all()
+
+    rows = [school_pricing_row(item, profile_53, profile_75) for item in items]
+
+    return render_template(
+        "admin/school_pricing_bulk.html",
+        rows=rows,
+        profiles=profiles,
+        profile_53=profile_53,
+        profile_75=profile_75,
+        profile_53_data=profile_to_dict(profile_53),
+        profile_75_data=profile_to_dict(profile_75),
+    )
+
 
 
 @admin_bp.route("/school-destinations/new", methods=["GET", "POST"])
