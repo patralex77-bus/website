@@ -282,34 +282,43 @@ def default_school_profile(seat_hint: str):
     return profiles[0] if profiles else None
 
 
-def calculate_school_destination_price(profile: PricingProfile | None, distance_km_one_way, drive_minutes_one_way, stay_minutes):
+def calculate_school_destination_price(profile: PricingProfile | None, distance_km_one_way, drive_hours_one_way, stay_hours):
+    """Calculate the public gross school day-trip price.
+
+    Formula:
+    (Hin + Retour km) * km price
+    + (Hin + Retour Fahrtzeit) * driver hour price
+    + Wartezeit/Aufenthalt * waiting hour price
+    = net price
+
+    If net price is below the profile minimum day rate, the minimum day rate is used.
+    VAT is added after the minimum check.
+    """
     if not profile:
         return None
-    if distance_km_one_way in (None, "") or drive_minutes_one_way in (None, ""):
+    if distance_km_one_way in (None, "") or drive_hours_one_way in (None, ""):
         return None
 
-    distance = float(distance_km_one_way or 0)
-    drive_minutes = int(drive_minutes_one_way or 0)
-    stay_minutes = int(stay_minutes or 0)
+    distance = Decimal(str(distance_km_one_way or 0))
+    drive_hours = Decimal(str(drive_hours_one_way or 0))
+    waiting_hours = Decimal(str(stay_hours or 0))
 
-    if distance <= 0 or drive_minutes <= 0:
+    if distance <= 0 or drive_hours <= 0:
         return None
 
-    result = calculate_price(
-        profile,
-        total_km=distance * 2,
-        operating_hours=(drive_minutes * 2) / 60,
-        waiting_hours=stay_minutes / 60,
-        days=1,
-        tolls=0,
-        parking=0,
-        driver_hotel_cost=0,
-        is_international=False,
-        is_weekend=False,
-        is_holiday=False,
-        is_night=False,
-    )
-    return school_public_price(result)
+    total_km = distance * Decimal("2")
+    total_drive_hours = drive_hours * Decimal("2")
+
+    km_cost = total_km * Decimal(profile.price_per_km or 0)
+    driver_time_cost = total_drive_hours * Decimal(profile.hourly_rate or 0)
+    waiting_cost = waiting_hours * Decimal(profile.waiting_hourly_rate or 0)
+
+    calculated_net = km_cost + driver_time_cost + waiting_cost
+    minimum = Decimal(profile.minimum_day_rate or 0)
+    final_net = minimum if calculated_net < minimum else calculated_net
+
+    gross_total = final_net * (Decimal("1") + (Decimal(profile.vat_percent or 0) / Decimal("100")))
+    return gross_total.quantize(Decimal("1"))
 
 
 def school_pricing_row(destination: SchoolDestination, profile_53: PricingProfile | None, profile_75: PricingProfile | None) -> dict:
@@ -318,15 +327,18 @@ def school_pricing_row(destination: SchoolDestination, profile_53: PricingProfil
     drive_minutes = pricing.drive_minutes_one_way if pricing else None
     stay_minutes = pricing.stay_minutes if pricing else 240
 
-    calculated_53 = calculate_school_destination_price(profile_53, destination.distance_km, drive_minutes, stay_minutes)
-    calculated_75 = calculate_school_destination_price(profile_75, destination.distance_km, drive_minutes, stay_minutes)
+    drive_hours_one_way = (Decimal(drive_minutes) / Decimal("60")) if drive_minutes is not None else None
+    stay_hours = (Decimal(stay_minutes) / Decimal("60")) if stay_minutes is not None else Decimal("4")
+
+    calculated_53 = calculate_school_destination_price(profile_53, destination.distance_km, drive_hours_one_way, stay_hours)
+    calculated_75 = calculate_school_destination_price(profile_75, destination.distance_km, drive_hours_one_way, stay_hours)
 
     return {
         "item": destination,
         "pricing": pricing,
         "distance_km": destination.distance_km,
-        "drive_minutes_one_way": drive_minutes,
-        "stay_minutes": stay_minutes,
+        "drive_hours_one_way": drive_hours_one_way,
+        "stay_hours": stay_hours,
         "calculated_53": calculated_53,
         "calculated_75": calculated_75,
     }
@@ -368,19 +380,21 @@ def school_pricing_bulk():
                 continue
 
             item.distance_km = to_float(request.form.get(prefix + "distance_km"), None)
+            drive_hours_one_way = to_float(request.form.get(prefix + "drive_hours_one_way"), None)
+            stay_hours = to_float(request.form.get(prefix + "stay_hours"), 4)
 
             pricing = item.pricing
             if pricing is None:
                 pricing = SchoolDestinationPricing(destination=item)
                 db.session.add(pricing)
 
-            pricing.drive_minutes_one_way = to_int(request.form.get(prefix + "drive_minutes_one_way"), None)
-            pricing.stay_minutes = to_int(request.form.get(prefix + "stay_minutes"), 240)
+            pricing.drive_minutes_one_way = int(round(drive_hours_one_way * 60)) if drive_hours_one_way is not None else None
+            pricing.stay_minutes = int(round((stay_hours if stay_hours is not None else 0) * 60))
             pricing.price_profile_53_id = profile_53.id if profile_53 else None
             pricing.price_profile_75_id = profile_75.id if profile_75 else None
 
-            price_53 = calculate_school_destination_price(profile_53, item.distance_km, pricing.drive_minutes_one_way, pricing.stay_minutes)
-            price_75 = calculate_school_destination_price(profile_75, item.distance_km, pricing.drive_minutes_one_way, pricing.stay_minutes)
+            price_53 = calculate_school_destination_price(profile_53, item.distance_km, drive_hours_one_way, stay_hours)
+            price_75 = calculate_school_destination_price(profile_75, item.distance_km, drive_hours_one_way, stay_hours)
 
             if price_53 is not None:
                 item.price_53 = price_53

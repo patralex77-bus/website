@@ -5,7 +5,7 @@
   <div>
     <h1 class="text-4xl font-black">Schulpreise</h1>
     <p class="mt-2 max-w-4xl text-slate-600">
-      Alle Schulziele in einer Tabelle. Die Preise werden aus Entfernung, Fahrzeit, Aufenthalt und dem gewählten Preisprofil berechnet.
+      Alle Schulziele in einer Tabelle. Die Preise werden aus Entfernung, Fahrzeit in Stunden, Wartezeit in Stunden und dem gewählten Preisprofil berechnet.
     </p>
   </div>
   <div class="flex flex-wrap gap-3">
@@ -41,10 +41,10 @@
 
   <div class="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
     Formel pro Destination:
-    <span class="font-bold text-slate-900">2 × km einfach</span> +
-    <span class="font-bold text-slate-900">2 × Fahrzeit einfach</span> +
-    <span class="font-bold text-slate-900">Aufenthalt vor Ort</span>.
-    Fahrtzeit wird mit dem normalen Stundensatz gerechnet, Aufenthalt mit dem Wartestundensatz. Mindesttag aus dem Preisprofil bleibt aktiv.
+    <span class="font-bold text-slate-900">(km Hin + Retour) × km-Preis</span> +
+    <span class="font-bold text-slate-900">(Zeit Hin + Retour) × Stundenpreis Fahrer</span> +
+    <span class="font-bold text-slate-900">Wartezeit × Wartezeitpreis</span>.
+    Danach gilt: wenn Netto unter dem Mindestpreis des Profils liegt, wird der Mindestpreis verwendet; danach wird die USt berechnet.
   </div>
 </div>
 
@@ -60,10 +60,10 @@
           <th class="px-3 py-3">Ziel</th>
           <th class="px-3 py-3">Zone</th>
           <th class="px-3 py-3">km einfach</th>
-          <th class="px-3 py-3">Min. einfach</th>
-          <th class="px-3 py-3">Aufenthalt Min.</th>
+          <th class="px-3 py-3">Zeit einfach h</th>
+          <th class="px-3 py-3">Wartezeit h</th>
           <th class="px-3 py-3">Gesamt km</th>
-          <th class="px-3 py-3">Fahrt h</th>
+          <th class="px-3 py-3">Zeit H+R h</th>
           <th class="px-3 py-3">Preis 53</th>
           <th class="px-3 py-3">Doppeldecker</th>
           <th class="px-3 py-3">Status</th>
@@ -87,10 +87,10 @@
               <input class="school-input field w-28 bg-white" type="number" step="0.1" min="0" name="row_{{ item.id }}_distance_km" value="{{ row.distance_km if row.distance_km is not none else '' }}">
             </td>
             <td class="px-3 py-3">
-              <input class="school-input field w-28 bg-white" type="number" step="1" min="0" name="row_{{ item.id }}_drive_minutes_one_way" value="{{ row.drive_minutes_one_way if row.drive_minutes_one_way is not none else '' }}">
+              <input class="school-input field w-28 bg-white" type="number" step="0.1" min="0" name="row_{{ item.id }}_drive_hours_one_way" value="{{ row.drive_hours_one_way if row.drive_hours_one_way is not none else '' }}">
             </td>
             <td class="px-3 py-3">
-              <input class="school-input field w-28 bg-white" type="number" step="15" min="0" name="row_{{ item.id }}_stay_minutes" value="{{ row.stay_minutes if row.stay_minutes is not none else 240 }}">
+              <input class="school-input field w-28 bg-white" type="number" step="0.25" min="0" name="row_{{ item.id }}_stay_hours" value="{{ row.stay_hours if row.stay_hours is not none else 4 }}">
             </td>
             <td class="px-3 py-3 font-bold">
               <span class="js-total-km">–</span>
@@ -125,7 +125,7 @@
   </div>
 
   <div class="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
-    <p class="text-sm text-slate-500">Beim Speichern werden die berechneten Brutto-Richtpreise in den Destinationen gespeichert und öffentlich im Anfrageformular verwendet.</p>
+    <p class="text-sm text-slate-500">Beim Speichern werden die berechneten Brutto-Richtpreise in den Destinationen gespeichert. Die Eingabe erfolgt in Stunden; intern wird sie weiterhin in Minuten gespeichert.</p>
     <button class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">Alle Preise berechnen & speichern</button>
   </div>
 </form>
@@ -139,49 +139,53 @@
     return String(Math.round(value));
   }
 
-  function calculate(profile, kmOneWay, driveMinutesOneWay, stayMinutes) {
-    if (!profile || !profile.id || !kmOneWay || !driveMinutesOneWay) return null;
+  function calculate(profile, kmOneWay, driveHoursOneWay, stayHours) {
+    if (!profile || !profile.id || !kmOneWay || !driveHoursOneWay) return null;
 
     const totalKm = kmOneWay * 2;
-    const driveHours = (driveMinutesOneWay * 2) / 60;
-    const waitingHours = (stayMinutes || 0) / 60;
+    const totalDriveHours = driveHoursOneWay * 2;
+    const waitingHours = stayHours || 0;
 
     const kmCost = totalKm * (profile.price_per_km || 0);
-    const timeCost = driveHours * (profile.hourly_rate || 0);
+    const driverTimeCost = totalDriveHours * (profile.hourly_rate || 0);
     const waitingCost = waitingHours * (profile.waiting_hourly_rate || 0);
-    const directCost = kmCost + timeCost + waitingCost;
-    const subtotal = Math.max(directCost, profile.minimum_day_rate || 0);
-    const gross = subtotal * (1 + ((profile.vat_percent || 0) / 100));
+
+    const calculatedNet = kmCost + driverTimeCost + waitingCost;
+    const finalNet = Math.max(calculatedNet, profile.minimum_day_rate || 0);
+    const gross = finalNet * (1 + ((profile.vat_percent || 0) / 100));
 
     return {
       totalKm,
-      driveHours,
-      gross
+      totalDriveHours,
+      calculatedNet,
+      finalNet,
+      gross,
+      minimumApplied: finalNet > calculatedNet
     };
   }
 
   function updateRow(row) {
     const kmInput = row.querySelector('[name$="_distance_km"]');
-    const driveInput = row.querySelector('[name$="_drive_minutes_one_way"]');
-    const stayInput = row.querySelector('[name$="_stay_minutes"]');
+    const driveInput = row.querySelector('[name$="_drive_hours_one_way"]');
+    const stayInput = row.querySelector('[name$="_stay_hours"]');
 
     const kmOneWay = parseFloat(kmInput.value || '0');
-    const driveMinutes = parseInt(driveInput.value || '0', 10);
-    const stayMinutes = parseInt(stayInput.value || '0', 10);
+    const driveHoursOneWay = parseFloat(driveInput.value || '0');
+    const stayHours = parseFloat(stayInput.value || '0');
 
-    const calc53 = calculate(profile53, kmOneWay, driveMinutes, stayMinutes);
-    const calc75 = calculate(profile75, kmOneWay, driveMinutes, stayMinutes);
+    const calc53 = calculate(profile53, kmOneWay, driveHoursOneWay, stayHours);
+    const calc75 = calculate(profile75, kmOneWay, driveHoursOneWay, stayHours);
 
     row.querySelector('.js-total-km').textContent = kmOneWay > 0 ? (kmOneWay * 2).toFixed(1) : '–';
-    row.querySelector('.js-drive-hours').textContent = driveMinutes > 0 ? ((driveMinutes * 2) / 60).toFixed(2) : '–';
+    row.querySelector('.js-drive-hours').textContent = driveHoursOneWay > 0 ? (driveHoursOneWay * 2).toFixed(2) : '–';
     row.querySelector('.js-price-53').textContent = calc53 ? euro(calc53.gross) : '–';
     row.querySelector('.js-price-75').textContent = calc75 ? euro(calc75.gross) : '–';
 
     const status = row.querySelector('.js-status');
     status.className = 'js-status rounded-full px-3 py-2 text-xs font-black';
 
-    if (kmOneWay > 0 && driveMinutes > 0) {
-      status.textContent = 'berechenbar';
+    if (kmOneWay > 0 && driveHoursOneWay > 0) {
+      status.textContent = (calc53 && calc53.minimumApplied) || (calc75 && calc75.minimumApplied) ? 'Mindestpreis' : 'berechenbar';
       status.classList.add('bg-emerald-100', 'text-emerald-800');
     } else {
       status.textContent = 'Daten fehlen';
