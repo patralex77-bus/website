@@ -5,7 +5,7 @@
   <div>
     <h1 class="text-4xl font-black">Schulpreise</h1>
     <p class="mt-2 max-w-4xl text-slate-600">
-      Alle Schulziele in einer Tabelle. Die Preise werden aus Entfernung, Fahrzeit in Stunden, Wartezeit in Stunden und dem gewählten Preisprofil berechnet.
+      Alle Schulziele in einer Tabelle. Für jedes aktive Preisprofil wird automatisch eine eigene Preisspalte berechnet.
     </p>
   </div>
   <div class="flex flex-wrap gap-3">
@@ -15,50 +15,38 @@
 </div>
 
 <div class="mb-6 rounded-[2rem] bg-white p-5 shadow-sm">
-  <form method="get" class="grid gap-4 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
-    <label class="text-sm font-bold">Preisprofil 53 Plätze
-      <select class="field mt-2" name="profile_53_id">
-        {% for profile in profiles %}
-          <option value="{{ profile.id }}" {% if profile_53 and profile.id == profile_53.id %}selected{% endif %}>
-            {{ profile.name }} · {{ profile.price_per_km }} €/km · {{ profile.hourly_rate }} €/h · inkl. USt
-          </option>
-        {% endfor %}
-      </select>
-    </label>
-
-    <label class="text-sm font-bold">Preisprofil Doppeldecker
-      <select class="field mt-2" name="profile_75_id">
-        {% for profile in profiles %}
-          <option value="{{ profile.id }}" {% if profile_75 and profile.id == profile_75.id %}selected{% endif %}>
-            {{ profile.name }} · {{ profile.price_per_km }} €/km · {{ profile.hourly_rate }} €/h · inkl. USt
-          </option>
-        {% endfor %}
-      </select>
-    </label>
-
-    <button class="rounded-2xl bg-slate-900 px-5 py-3 font-black text-white">Profile anwenden</button>
-  </form>
-
-  <div class="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-    Formel pro Destination:
+  <div class="rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+    Formel pro Destination und aktivem Preisprofil:
     <span class="font-bold text-slate-900">(km Hin + Retour) × km-Preis</span> +
     <span class="font-bold text-slate-900">(Zeit Hin + Retour) × Stundenpreis Fahrer</span> +
     <span class="font-bold text-slate-900">Wartezeit × Wartezeitpreis</span>.
-    Danach gilt: wenn die berechnete Endsumme unter dem Mindestpreis des Profils liegt, wird der Mindestpreis verwendet. Die 10% USt sind bereits in diesen Richtpreisen enthalten.
+    Danach gilt: wenn die berechnete Endsumme unter dem Mindestpreis des jeweiligen Profils liegt, wird der Mindestpreis verwendet.
+    Die 10% USt sind bereits in diesen Richtpreisen enthalten.
   </div>
-</div>
 
-<div class="mb-6 rounded-2xl bg-emerald-50 p-4 text-sm font-bold leading-6 text-emerald-800">
-  Wichtig: Die hier berechneten Schulpreise sind Endpreise inkl. 10% USt. Keine zusätzliche USt wird aufgeschlagen.
+  {% if profiles %}
+    <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {% for profile in profiles %}
+        <div class="rounded-2xl border border-slate-200 bg-white p-4">
+          <div class="font-black text-slate-950">{{ profile.name }}</div>
+          <div class="mt-1 text-xs leading-5 text-slate-500">
+            {{ profile.bus_category }} · {{ profile.price_per_km }} €/km · {{ profile.hourly_rate }} €/h Fahrer · {{ profile.waiting_hourly_rate }} €/h Wartezeit · Mindestpreis {{ profile.minimum_day_rate }} €
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="mt-4 rounded-2xl bg-amber-50 p-4 text-sm font-bold text-amber-800">
+      Es gibt noch kein aktives Preisprofil. Bitte zuerst unter „Preisprofile“ mindestens ein Profil aktivieren.
+    </div>
+  {% endif %}
 </div>
 
 <form method="post" class="rounded-[2rem] bg-white p-4 shadow-sm">
   <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-  <input type="hidden" name="profile_53_id" value="{{ profile_53.id if profile_53 else '' }}">
-  <input type="hidden" name="profile_75_id" value="{{ profile_75.id if profile_75 else '' }}">
 
   <div class="overflow-x-auto">
-    <table class="min-w-[1200px] w-full border-separate border-spacing-y-2 text-left text-sm">
+    <table class="min-w-[1400px] w-full border-separate border-spacing-y-2 text-left text-sm">
       <thead class="sticky top-0 z-10 bg-white text-xs uppercase tracking-[.12em] text-slate-500">
         <tr>
           <th class="px-3 py-3">Ziel</th>
@@ -68,8 +56,9 @@
           <th class="px-3 py-3">Wartezeit h</th>
           <th class="px-3 py-3">Gesamt km</th>
           <th class="px-3 py-3">Zeit H+R h</th>
-          <th class="px-3 py-3">Preis 53</th>
-          <th class="px-3 py-3">Doppeldecker</th>
+          {% for profile in profiles %}
+            <th class="px-3 py-3 min-w-[170px]">{{ profile.name }}</th>
+          {% endfor %}
           <th class="px-3 py-3">Status</th>
           <th class="px-3 py-3"></th>
         </tr>
@@ -102,18 +91,16 @@
             <td class="px-3 py-3 font-bold">
               <span class="js-drive-hours">–</span>
             </td>
-            <td class="px-3 py-3">
-              <div class="text-lg font-black text-slate-950"><span class="js-price-53">{{ row.calculated_53 or item.price_53 or '–' }}</span> €</div>
-              {% if item.price_53 %}
-                <div class="text-xs text-slate-500">gespeichert: {{ item.price_53 }} €</div>
-              {% endif %}
-            </td>
-            <td class="px-3 py-3">
-              <div class="text-lg font-black text-slate-950"><span class="js-price-75">{{ row.calculated_75 or item.price_75 or '–' }}</span> €</div>
-              {% if item.price_75 %}
-                <div class="text-xs text-slate-500">gespeichert: {{ item.price_75 }} €</div>
-              {% endif %}
-            </td>
+            {% for price in row.profile_prices %}
+              <td class="px-3 py-3">
+                <div class="text-lg font-black text-slate-950">
+                  <span class="js-profile-price" data-profile-id="{{ price.profile_id }}">{{ price.price or '–' }}</span> €
+                </div>
+                <div class="text-xs text-slate-500">
+                  {% if price.profile.bus_category %}{{ price.profile.bus_category }}{% else %}aktives Profil{% endif %}
+                </div>
+              </td>
+            {% endfor %}
             <td class="px-3 py-3">
               <span class="js-status rounded-full px-3 py-2 text-xs font-black">–</span>
             </td>
@@ -122,21 +109,20 @@
             </td>
           </tr>
         {% else %}
-          <tr><td colspan="11" class="rounded-2xl bg-slate-50 p-8 text-center text-slate-500">Keine Destinationen vorhanden.</td></tr>
+          <tr><td colspan="{{ 9 + profiles|length }}" class="rounded-2xl bg-slate-50 p-8 text-center text-slate-500">Keine Destinationen vorhanden.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
   <div class="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
-    <p class="text-sm text-slate-500">Beim Speichern werden die berechneten Richtpreise inkl. 10% USt in den Destinationen gespeichert. Die Eingabe erfolgt in Stunden; intern wird sie weiterhin in Minuten gespeichert.</p>
+    <p class="text-sm text-slate-500">Beim Speichern werden die Eingabewerte je Destination gespeichert. Die Preisspalten entstehen automatisch aus allen aktiven Preisprofilen.</p>
     <button class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">Alle Preise berechnen & speichern</button>
   </div>
 </form>
 
 <script>
-  const profile53 = {{ profile_53_data|tojson }};
-  const profile75 = {{ profile_75_data|tojson }};
+  const profiles = {{ profiles_data|tojson }};
 
   function euro(value) {
     if (!Number.isFinite(value)) return '–';
@@ -162,7 +148,6 @@
       totalDriveHours,
       calculatedTotal,
       finalTotal,
-      gross: finalTotal,
       minimumApplied: finalTotal > calculatedTotal
     };
   }
@@ -176,20 +161,32 @@
     const driveHoursOneWay = parseFloat(driveInput.value || '0');
     const stayHours = parseFloat(stayInput.value || '0');
 
-    const calc53 = calculate(profile53, kmOneWay, driveHoursOneWay, stayHours);
-    const calc75 = calculate(profile75, kmOneWay, driveHoursOneWay, stayHours);
-
     row.querySelector('.js-total-km').textContent = kmOneWay > 0 ? (kmOneWay * 2).toFixed(1) : '–';
     row.querySelector('.js-drive-hours').textContent = driveHoursOneWay > 0 ? (driveHoursOneWay * 2).toFixed(2) : '–';
-    row.querySelector('.js-price-53').textContent = calc53 ? euro(calc53.gross) : '–';
-    row.querySelector('.js-price-75').textContent = calc75 ? euro(calc75.gross) : '–';
+
+    let anyCalculated = false;
+    let anyMinimum = false;
+
+    profiles.forEach(profile => {
+      const cell = row.querySelector('.js-profile-price[data-profile-id="' + profile.id + '"]');
+      if (!cell) return;
+
+      const result = calculate(profile, kmOneWay, driveHoursOneWay, stayHours);
+      if (result) {
+        cell.textContent = euro(result.finalTotal);
+        anyCalculated = true;
+        anyMinimum = anyMinimum || result.minimumApplied;
+      } else {
+        cell.textContent = '–';
+      }
+    });
 
     const status = row.querySelector('.js-status');
     status.className = 'js-status rounded-full px-3 py-2 text-xs font-black';
 
-    if (kmOneWay > 0 && driveHoursOneWay > 0) {
-      status.textContent = (calc53 && calc53.minimumApplied) || (calc75 && calc75.minimumApplied) ? 'Mindestpreis' : 'berechenbar';
-      status.classList.add('bg-emerald-100', 'text-emerald-800');
+    if (anyCalculated) {
+      status.textContent = anyMinimum ? 'Mindestpreis' : 'berechenbar';
+      status.classList.add(anyMinimum ? 'bg-sky-100' : 'bg-emerald-100', anyMinimum ? 'text-sky-800' : 'text-emerald-800');
     } else {
       status.textContent = 'Daten fehlen';
       status.classList.add('bg-amber-100', 'text-amber-800');

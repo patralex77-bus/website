@@ -246,16 +246,13 @@ def review_detail(review_id: int):
 
 
 # ---------- School pricing helpers ----------
-def school_public_price(result):
-    return Decimal(result.gross_total).quantize(Decimal("1"))
-
-
 def profile_to_dict(profile: PricingProfile | None) -> dict:
     if not profile:
         return {}
     return {
         "id": profile.id,
-        "name": profile.name,
+        "name": profile.name or f"Preisprofil {profile.id}",
+        "bus_category": profile.bus_category or "",
         "price_per_km": float(profile.price_per_km or 0),
         "hourly_rate": float(profile.hourly_rate or 0),
         "waiting_hourly_rate": float(profile.waiting_hourly_rate or 0),
@@ -324,7 +321,27 @@ def calculate_school_destination_price(profile: PricingProfile | None, distance_
 
     return final_total.quantize(Decimal("1"))
 
-def school_pricing_row(destination: SchoolDestination, profile_53: PricingProfile | None, profile_75: PricingProfile | None) -> dict:
+
+def school_profile_price_matrix(destination: SchoolDestination, profiles: list[PricingProfile]) -> list[dict]:
+    pricing = destination.pricing
+    drive_minutes = pricing.drive_minutes_one_way if pricing else None
+    stay_minutes = pricing.stay_minutes if pricing else 240
+
+    drive_hours_one_way = (Decimal(drive_minutes) / Decimal("60")) if drive_minutes is not None else None
+    stay_hours = (Decimal(stay_minutes) / Decimal("60")) if stay_minutes is not None else Decimal("4")
+
+    prices = []
+    for profile in profiles:
+        price = calculate_school_destination_price(profile, destination.distance_km, drive_hours_one_way, stay_hours)
+        prices.append({
+            "profile": profile,
+            "profile_id": profile.id,
+            "price": price,
+        })
+    return prices
+
+
+def school_pricing_row(destination: SchoolDestination, profiles: list[PricingProfile]) -> dict:
     pricing = destination.pricing
 
     drive_minutes = pricing.drive_minutes_one_way if pricing else None
@@ -333,19 +350,14 @@ def school_pricing_row(destination: SchoolDestination, profile_53: PricingProfil
     drive_hours_one_way = (Decimal(drive_minutes) / Decimal("60")) if drive_minutes is not None else None
     stay_hours = (Decimal(stay_minutes) / Decimal("60")) if stay_minutes is not None else Decimal("4")
 
-    calculated_53 = calculate_school_destination_price(profile_53, destination.distance_km, drive_hours_one_way, stay_hours)
-    calculated_75 = calculate_school_destination_price(profile_75, destination.distance_km, drive_hours_one_way, stay_hours)
-
     return {
         "item": destination,
         "pricing": pricing,
         "distance_km": destination.distance_km,
         "drive_hours_one_way": drive_hours_one_way,
         "stay_hours": stay_hours,
-        "calculated_53": calculated_53,
-        "calculated_75": calculated_75,
+        "profile_prices": school_profile_price_matrix(destination, profiles),
     }
-
 
 
 # ---------- Schools ----------
@@ -359,14 +371,11 @@ def school_destinations_list():
 @admin_bp.route("/school-pricing", methods=["GET", "POST"])
 @login_required
 def school_pricing_bulk():
+    profiles = PricingProfile.query.filter_by(is_active=True).order_by(PricingProfile.name.asc()).all()
+
     if request.method == "POST":
         if not require_csrf():
             return redirect(url_for("admin.school_pricing_bulk"))
-
-        profile_53_id = to_int(request.form.get("profile_53_id"), None)
-        profile_75_id = to_int(request.form.get("profile_75_id"), None)
-        profile_53 = PricingProfile.query.get(profile_53_id) if profile_53_id else None
-        profile_75 = PricingProfile.query.get(profile_75_id) if profile_75_id else None
 
         items = SchoolDestination.query.order_by(
             SchoolDestination.zone.asc(),
@@ -376,6 +385,9 @@ def school_pricing_bulk():
 
         updated = 0
         calculated = 0
+
+        legacy_profile_53 = default_school_profile("53")
+        legacy_profile_75 = default_school_profile("doppeldecker")
 
         for item in items:
             prefix = f"row_{item.id}_"
@@ -393,32 +405,25 @@ def school_pricing_bulk():
 
             pricing.drive_minutes_one_way = int(round(drive_hours_one_way * 60)) if drive_hours_one_way is not None else None
             pricing.stay_minutes = int(round((stay_hours if stay_hours is not None else 0) * 60))
-            pricing.price_profile_53_id = profile_53.id if profile_53 else None
-            pricing.price_profile_75_id = profile_75.id if profile_75 else None
 
-            price_53 = calculate_school_destination_price(profile_53, item.distance_km, drive_hours_one_way, stay_hours)
-            price_75 = calculate_school_destination_price(profile_75, item.distance_km, drive_hours_one_way, stay_hours)
+            # Legacy fields remain filled so older templates and admin lists keep working.
+            price_53 = calculate_school_destination_price(legacy_profile_53, item.distance_km, drive_hours_one_way, stay_hours)
+            price_75 = calculate_school_destination_price(legacy_profile_75, item.distance_km, drive_hours_one_way, stay_hours)
 
             if price_53 is not None:
                 item.price_53 = price_53
-                calculated += 1
             if price_75 is not None:
                 item.price_75 = price_75
-                calculated += 1
+
+            for profile in profiles:
+                if calculate_school_destination_price(profile, item.distance_km, drive_hours_one_way, stay_hours) is not None:
+                    calculated += 1
 
             updated += 1
 
         db.session.commit()
-        flash(f"Schulpreise gespeichert. {updated} Destinationen aktualisiert, {calculated} Preise berechnet.", "success")
-        return redirect(url_for("admin.school_pricing_bulk", profile_53_id=profile_53_id or "", profile_75_id=profile_75_id or ""))
-
-    profiles = PricingProfile.query.filter_by(is_active=True).order_by(PricingProfile.name.asc()).all()
-
-    profile_53_id = to_int(request.args.get("profile_53_id"), None)
-    profile_75_id = to_int(request.args.get("profile_75_id"), None)
-
-    profile_53 = PricingProfile.query.get(profile_53_id) if profile_53_id else default_school_profile("53")
-    profile_75 = PricingProfile.query.get(profile_75_id) if profile_75_id else default_school_profile("doppeldecker")
+        flash(f"Schulpreise gespeichert. {updated} Destinationen aktualisiert, {calculated} Preise für aktive Profile berechnet.", "success")
+        return redirect(url_for("admin.school_pricing_bulk"))
 
     items = SchoolDestination.query.order_by(
         SchoolDestination.zone.asc(),
@@ -426,18 +431,14 @@ def school_pricing_bulk():
         SchoolDestination.title.asc(),
     ).all()
 
-    rows = [school_pricing_row(item, profile_53, profile_75) for item in items]
+    rows = [school_pricing_row(item, profiles) for item in items]
 
     return render_template(
         "admin/school_pricing_bulk.html",
         rows=rows,
         profiles=profiles,
-        profile_53=profile_53,
-        profile_75=profile_75,
-        profile_53_data=profile_to_dict(profile_53),
-        profile_75_data=profile_to_dict(profile_75),
+        profiles_data=[profile_to_dict(profile) for profile in profiles],
     )
-
 
 
 @admin_bp.route("/school-destinations/new", methods=["GET", "POST"])

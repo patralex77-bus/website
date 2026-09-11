@@ -350,22 +350,13 @@ def _format_hours(value) -> str:
         return ""
 
 
-def _default_school_profile(seat_hint: str):
-    profiles = PricingProfile.query.filter_by(is_active=True).order_by(PricingProfile.name.asc()).all()
-    hint = seat_hint.lower()
-
-    for profile in profiles:
-        haystack = f"{profile.name} {profile.bus_category}".lower()
-        if hint in haystack:
-            return profile
-
-    if hint in {"77", "75", "doppeldecker"}:
-        for profile in profiles:
-            haystack = f"{profile.name} {profile.bus_category}".lower()
-            if "doppel" in haystack or "77" in haystack or "75" in haystack:
-                return profile
-
-    return profiles[0] if profiles else None
+def _active_price_profiles():
+    return (
+        PricingProfile.query
+        .filter_by(is_active=True)
+        .order_by(PricingProfile.name.asc())
+        .all()
+    )
 
 
 def _profile_payload(profile: PricingProfile | None) -> dict:
@@ -373,6 +364,7 @@ def _profile_payload(profile: PricingProfile | None) -> dict:
         return {
             "id": "",
             "name": "",
+            "category": "",
             "km": "",
             "hour": "",
             "wait": "",
@@ -381,7 +373,8 @@ def _profile_payload(profile: PricingProfile | None) -> dict:
 
     return {
         "id": profile.id,
-        "name": profile.name or "",
+        "name": profile.name or f"Preisprofil {profile.id}",
+        "category": profile.bus_category or "",
         "km": float(profile.price_per_km or 0),
         "hour": float(profile.hourly_rate or 0),
         "wait": float(profile.waiting_hourly_rate or 0),
@@ -438,6 +431,35 @@ def _school_price_value(profile: PricingProfile | None, distance_km_one_way, dri
     return final.quantize(Decimal("1"))
 
 
+def _school_profile_prices(destination: SchoolDestination, drive_hours_one_way, wait_hours) -> list[dict]:
+    prices = []
+    for profile in _active_price_profiles():
+        amount = _school_price_value(profile, destination.distance_km, drive_hours_one_way, wait_hours)
+        payload = _profile_payload(profile)
+        prices.append({
+            "id": payload["id"],
+            "name": payload["name"],
+            "category": payload["category"],
+            "km": payload["km"],
+            "hour": payload["hour"],
+            "wait": payload["wait"],
+            "minimum": payload["minimum"],
+            "amount": float(amount or 0),
+            "label": _format_euro(amount),
+            "final_label": _format_euro_plain(amount),
+        })
+    return prices
+
+
+def _pick_profile_price(profile_prices: list[dict], *hints: str):
+    lowered_hints = [hint.lower() for hint in hints if hint]
+    for entry in profile_prices:
+        haystack = f"{entry.get('name', '')} {entry.get('category', '')}".lower()
+        if any(hint in haystack for hint in lowered_hints):
+            return entry
+    return profile_prices[0] if profile_prices else None
+
+
 def _school_pricing_context(destination: SchoolDestination, start_time: str | None = None, end_time: str | None = None) -> dict:
     pricing = destination.pricing
 
@@ -457,11 +479,9 @@ def _school_pricing_context(destination: SchoolDestination, start_time: str | No
             adjusted_wait_hours = Decimal("0")
             time_warning = "Die gewünschte Zeitspanne ist kürzer als die hinterlegte reine Fahrzeit. Bitte Zeiten prüfen."
 
-    profile_53 = pricing.profile_53 if pricing and pricing.profile_53 else _default_school_profile("53")
-    profile_75 = pricing.profile_75 if pricing and pricing.profile_75 else _default_school_profile("doppeldecker")
-
-    price_53 = _school_price_value(profile_53, destination.distance_km, drive_hours_one_way, adjusted_wait_hours)
-    price_75 = _school_price_value(profile_75, destination.distance_km, drive_hours_one_way, adjusted_wait_hours)
+    profile_prices = _school_profile_prices(destination, drive_hours_one_way, adjusted_wait_hours)
+    legacy_53 = _pick_profile_price(profile_prices, "53")
+    legacy_75 = _pick_profile_price(profile_prices, "doppel", "75", "77")
 
     return {
         "drive_hours_one_way": drive_hours_one_way,
@@ -469,10 +489,11 @@ def _school_pricing_context(destination: SchoolDestination, start_time: str | No
         "customer_total_hours": customer_total_hours,
         "adjusted_wait_hours": adjusted_wait_hours,
         "time_warning": time_warning,
-        "profile_53": profile_53,
-        "profile_75": profile_75,
-        "price_53": price_53,
-        "price_75": price_75,
+        "profile_prices": profile_prices,
+        "price_53": Decimal(str(legacy_53["amount"])) if legacy_53 and legacy_53.get("amount") else None,
+        "price_75": Decimal(str(legacy_75["amount"])) if legacy_75 and legacy_75.get("amount") else None,
+        "profile_53": legacy_53 or {},
+        "profile_75": legacy_75 or {},
     }
 
 
@@ -487,6 +508,9 @@ def _school_offer_options():
     options = []
     for d in destinations:
         ctx = _school_pricing_context(d)
+        legacy_53 = ctx["profile_53"]
+        legacy_75 = ctx["profile_75"]
+
         options.append({
             "slug": d.slug,
             "title": d.title,
@@ -497,12 +521,14 @@ def _school_offer_options():
             "distance_km": float(d.distance_km or 0),
             "drive_hours_one_way": float(ctx["drive_hours_one_way"] or 0),
             "standard_wait_hours": float(ctx["standard_wait_hours"] or 0),
-            "price_53_label": _format_euro(ctx["price_53"] or d.price_53),
-            "price_75_label": _format_euro(ctx["price_75"] or d.price_75),
-            "price_53_amount": float(ctx["price_53"] or d.price_53 or 0),
-            "price_75_amount": float(ctx["price_75"] or d.price_75 or 0),
-            "profile_53": _profile_payload(ctx["profile_53"]),
-            "profile_75": _profile_payload(ctx["profile_75"]),
+            "profile_prices": ctx["profile_prices"],
+            # Legacy keys stay for compatibility with older templates.
+            "price_53_label": legacy_53.get("label") if legacy_53 else _format_euro(d.price_53),
+            "price_75_label": legacy_75.get("label") if legacy_75 else _format_euro(d.price_75),
+            "price_53_amount": float(legacy_53.get("amount") or d.price_53 or 0) if legacy_53 else float(d.price_53 or 0),
+            "price_75_amount": float(legacy_75.get("amount") or d.price_75 or 0) if legacy_75 else float(d.price_75 or 0),
+            "profile_53": legacy_53 or _profile_payload(None),
+            "profile_75": legacy_75 or _profile_payload(None),
         })
     return options
 
@@ -538,15 +564,17 @@ def _school_offer_summary(destination: SchoolDestination | None, start_time: str
     if ctx["time_warning"]:
         lines.append(f"- Hinweis: {ctx['time_warning']}")
 
-    if ctx["price_53"]:
-        lines.append(f"- Angepasster Richtpreis 53 Plätze: {_format_euro_plain(ctx['price_53'])} inkl. 10% USt")
-    elif destination.price_53:
-        lines.append(f"- Richtpreis 53 Plätze: {_format_euro(destination.price_53)} inkl. 10% USt")
-
-    if ctx["price_75"]:
-        lines.append(f"- Angepasster Richtpreis Doppeldecker: {_format_euro_plain(ctx['price_75'])} inkl. 10% USt")
-    elif destination.price_75:
-        lines.append(f"- Richtpreis Doppeldecker: {_format_euro(destination.price_75)} inkl. 10% USt")
+    profile_prices = [entry for entry in ctx["profile_prices"] if entry.get("amount")]
+    if profile_prices:
+        heading = "Berechnete Preise lt. Zeitangaben inkl. 10% USt:" if start_time and end_time and ctx["customer_total_hours"] is not None else "Richtpreise nach aktiven Preisprofilen inkl. 10% USt:"
+        lines.append(f"- {heading}")
+        for entry in profile_prices:
+            lines.append(f"  - {entry['name']}: {_format_euro_plain(entry['amount'])}")
+    else:
+        if destination.price_53:
+            lines.append(f"- Richtpreis 53 Plätze: {_format_euro(destination.price_53)} inkl. 10% USt")
+        if destination.price_75:
+            lines.append(f"- Richtpreis Doppeldecker: {_format_euro(destination.price_75)} inkl. 10% USt")
 
     if destination.short_description:
         lines.append(f"- Beschreibung: {destination.short_description}")

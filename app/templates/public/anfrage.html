@@ -133,21 +133,10 @@
                     data-zone="{{ item.zone }}"
                     data-category="{{ item.category }}"
                     data-travel-time="{{ item.travel_time }}"
-                    data-price53="{{ item.price_53_label }}"
-                    data-price75="{{ item.price_75_label }}"
-                    data-price53-amount="{{ item.price_53_amount }}"
-                    data-price75-amount="{{ item.price_75_amount }}"
                     data-distance-km="{{ item.distance_km }}"
                     data-drive-hours-one-way="{{ item.drive_hours_one_way }}"
                     data-standard-wait-hours="{{ item.standard_wait_hours }}"
-                    data-p53-km="{{ item.profile_53.km }}"
-                    data-p53-hour="{{ item.profile_53.hour }}"
-                    data-p53-wait="{{ item.profile_53.wait }}"
-                    data-p53-minimum="{{ item.profile_53.minimum }}"
-                    data-p75-km="{{ item.profile_75.km }}"
-                    data-p75-hour="{{ item.profile_75.hour }}"
-                    data-p75-wait="{{ item.profile_75.wait }}"
-                    data-p75-minimum="{{ item.profile_75.minimum }}"
+                    data-profile-prices='{{ item.profile_prices|tojson|forceescape }}'
                     data-description="{{ item.description }}"
                     {% if item.slug == selected_school_slug %}selected{% endif %}
                   >{{ item.title }}</option>
@@ -158,14 +147,10 @@
             <div id="schoolPricePreview" class="rounded-3xl bg-white p-5 shadow-sm">
               <div class="text-sm font-black uppercase tracking-[.18em] text-red-700">Richtpreis</div>
               <h3 id="schoolPreviewTitle" class="mt-2 text-2xl font-black">Bitte Tour auswählen</h3>
-              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+              <div id="schoolPreviewPriceCards" class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 <div class="rounded-2xl bg-slate-50 p-4">
-                  <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">53 Plätze</div>
-                  <div id="schoolPreviewPrice53" class="mt-2 text-xl font-black">–</div>
-                </div>
-                <div class="rounded-2xl bg-slate-50 p-4">
-                  <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Doppeldecker</div>
-                  <div id="schoolPreviewPrice75" class="mt-2 text-xl font-black">–</div>
+                  <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Preisprofile</div>
+                  <div class="mt-2 text-xl font-black">–</div>
                 </div>
               </div>
               <p id="schoolPreviewMeta" class="mt-4 text-sm leading-6 text-slate-600">Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.</p>
@@ -308,14 +293,10 @@
               <h2 class="mt-2 text-2xl font-black text-slate-950">Berechneter Preis lt. Ihren Angaben</h2>
               <p id="customerPriceHint" class="mt-2 text-sm leading-6 text-slate-600">Bitte Tour, Abfahrtszeit und Rückkehr auswählen.</p>
             </div>
-            <div class="grid gap-3 text-sm sm:grid-cols-2 lg:min-w-[380px]">
+            <div id="customerPriceCards" class="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3 lg:min-w-[520px]">
               <div class="rounded-2xl bg-white p-4">
-                <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">53 Plätze</div>
-                <div id="customerPrice53" class="mt-2 text-2xl font-black text-slate-950">–</div>
-              </div>
-              <div class="rounded-2xl bg-white p-4">
-                <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Doppeldecker</div>
-                <div id="customerPrice75" class="mt-2 text-2xl font-black text-slate-950">–</div>
+                <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Preisprofile</div>
+                <div class="mt-2 text-2xl font-black text-slate-950">–</div>
               </div>
             </div>
           </div>
@@ -372,14 +353,12 @@
       const timeReturnInput = document.getElementById('timeReturnInput');
 
       const previewTitle = document.getElementById('schoolPreviewTitle');
-      const previewPrice53 = document.getElementById('schoolPreviewPrice53');
-      const previewPrice75 = document.getElementById('schoolPreviewPrice75');
+      const previewPriceCards = document.getElementById('schoolPreviewPriceCards');
       const previewMeta = document.getElementById('schoolPreviewMeta');
       const previewWarning = document.getElementById('schoolPreviewWarning');
       const calculatedPriceBlock = document.getElementById('schoolCalculatedPriceBlock');
       const customerPriceHint = document.getElementById('customerPriceHint');
-      const customerPrice53 = document.getElementById('customerPrice53');
-      const customerPrice75 = document.getElementById('customerPrice75');
+      const customerPriceCards = document.getElementById('customerPriceCards');
       const customerTimeRange = document.getElementById('customerTimeRange');
       const customerWaitHours = document.getElementById('customerWaitHours');
       const customerPriceWarning = document.getElementById('customerPriceWarning');
@@ -412,6 +391,54 @@
         return Math.round(value) + ' €';
       }
 
+      function escapeHtml(value) {
+        return String(value || '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      function optionProfiles(option) {
+        try {
+          const parsed = JSON.parse(option.dataset.profilePrices || '[]');
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function renderPriceCards(container, profiles, options = {}) {
+        const finalPrices = Boolean(options.finalPrices);
+        const waitHours = options.waitHours;
+
+        if (!container) return;
+        if (!profiles.length) {
+          container.innerHTML = `
+            <div class="rounded-2xl bg-white p-4">
+              <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Preis</div>
+              <div class="mt-2 text-xl font-black text-slate-950">auf Anfrage</div>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = profiles.map(profile => {
+          const amount = typeof waitHours === 'number'
+            ? calculatePriceForProfile(profile, waitHours)
+            : parseNumber(profile.amount);
+          const priceText = finalPrices ? formatFinalEuro(amount) : formatEuro(amount);
+          const subtitle = [profile.category, profile.minimum ? 'Mindestpreis ' + Math.round(profile.minimum) + ' €' : ''].filter(Boolean).join(' · ');
+
+          return `
+            <div class="rounded-2xl ${finalPrices ? 'bg-white' : 'bg-slate-50'} p-4">
+              <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">${escapeHtml(profile.name || 'Preisprofil')}</div>
+              <div class="mt-2 ${finalPrices ? 'text-2xl' : 'text-xl'} font-black text-slate-950">${escapeHtml(priceText)}</div>
+              ${subtitle ? `<div class="mt-1 text-xs leading-5 text-slate-500">${escapeHtml(subtitle)}</div>` : ''}
+            </div>`;
+        }).join('');
+      }
+
       function parseTimeToMinutes(value) {
         if (!value || !value.includes(':')) return null;
         const [hours, minutes] = value.split(':').map(Number);
@@ -429,17 +456,16 @@
         return duration;
       }
 
-      function calculatePrice(option, prefix, waitHours) {
-        const kmOneWay = parseNumber(option.dataset.distanceKm);
-        const driveHoursOneWay = parseNumber(option.dataset.driveHoursOneWay);
-        const kmRate = parseNumber(option.dataset[prefix + 'Km']);
-        const hourRate = parseNumber(option.dataset[prefix + 'Hour']);
-        const waitRate = parseNumber(option.dataset[prefix + 'Wait']);
-        const minimum = parseNumber(option.dataset[prefix + 'Minimum']);
+      function calculatePriceForProfile(profile, waitHours) {
+        const kmOneWay = parseNumber(schoolSelect.options[schoolSelect.selectedIndex]?.dataset.distanceKm);
+        const driveHoursOneWay = parseNumber(schoolSelect.options[schoolSelect.selectedIndex]?.dataset.driveHoursOneWay);
+        const kmRate = parseNumber(profile.km);
+        const hourRate = parseNumber(profile.hour);
+        const waitRate = parseNumber(profile.wait);
+        const minimum = parseNumber(profile.minimum);
 
         if (!kmOneWay || !driveHoursOneWay || !kmRate) {
-          const fallback = parseNumber(option.dataset[prefix === 'p53' ? 'price53Amount' : 'price75Amount']);
-          return fallback || null;
+          return parseNumber(profile.amount) || null;
         }
 
         const calculated = (kmOneWay * 2 * kmRate) + (driveHoursOneWay * 2 * hourRate) + (waitHours * waitRate);
@@ -448,8 +474,7 @@
 
       function resetCalculatedPriceBox() {
         customerPriceHint.textContent = 'Bitte Tour, Abfahrtszeit und Rückkehr auswählen.';
-        customerPrice53.textContent = '–';
-        customerPrice75.textContent = '–';
+        renderPriceCards(customerPriceCards, [], { finalPrices: true });
         customerTimeRange.textContent = '–';
         customerWaitHours.textContent = '–';
         customerPriceWarning.classList.add('hidden');
@@ -459,8 +484,7 @@
       function resetSchoolSelection() {
         schoolSelect.selectedIndex = 0;
         previewTitle.textContent = 'Bitte Tour auswählen';
-        previewPrice53.textContent = '–';
-        previewPrice75.textContent = '–';
+        renderPriceCards(previewPriceCards, [], { finalPrices: false });
         previewMeta.textContent = 'Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.';
         previewWarning.classList.add('hidden');
         previewWarning.textContent = '';
@@ -515,8 +539,7 @@
         const option = schoolSelect.options[schoolSelect.selectedIndex];
         if (!option || !option.value) {
           previewTitle.textContent = 'Bitte Tour auswählen';
-          previewPrice53.textContent = '–';
-          previewPrice75.textContent = '–';
+          renderPriceCards(previewPriceCards, [], { finalPrices: false });
           previewMeta.textContent = 'Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.';
           previewWarning.classList.add('hidden');
           previewWarning.textContent = '';
@@ -533,17 +556,13 @@
         const travelTime = option.dataset.travelTime || '';
         const category = option.dataset.category || '';
         const description = option.dataset.description || '';
-        const kmOneWay = parseNumber(option.dataset.distanceKm);
         const driveHoursOneWay = parseNumber(option.dataset.driveHoursOneWay);
         const standardWaitHours = parseNumber(option.dataset.standardWaitHours) || 4;
         const duration = customerDurationHours();
-
-        const standardPrice53 = calculatePrice(option, 'p53', standardWaitHours);
-        const standardPrice75 = calculatePrice(option, 'p75', standardWaitHours);
+        const profiles = optionProfiles(option);
 
         previewTitle.textContent = title;
-        previewPrice53.textContent = formatEuro(standardPrice53);
-        previewPrice75.textContent = formatEuro(standardPrice75);
+        renderPriceCards(previewPriceCards, profiles, { finalPrices: false });
         previewMeta.textContent = [zone ? 'Zone ' + zone : '', travelTime, category, description].filter(Boolean).join(' · ');
 
         let warning = '';
@@ -555,12 +574,8 @@
             warning = 'Die gewünschte Zeitspanne ist kürzer als die hinterlegte reine Fahrzeit. Bitte Zeiten prüfen.';
           }
 
-          const customerPrice53Value = calculatePrice(option, 'p53', waitHours);
-          const customerPrice75Value = calculatePrice(option, 'p75', waitHours);
-
           customerPriceHint.textContent = title;
-          customerPrice53.textContent = formatFinalEuro(customerPrice53Value);
-          customerPrice75.textContent = formatFinalEuro(customerPrice75Value);
+          renderPriceCards(customerPriceCards, profiles, { finalPrices: true, waitHours });
           customerTimeRange.textContent = timeDepartureInput.value + '–' + timeReturnInput.value;
           customerWaitHours.textContent = formatHours(waitHours) + ' h';
         } else {
@@ -596,6 +611,7 @@
       timeDepartureInput.addEventListener('change', updateSchoolPreview);
       timeReturnInput.addEventListener('change', updateSchoolPreview);
       updateMode();
+
     </script>
   </main>
 
