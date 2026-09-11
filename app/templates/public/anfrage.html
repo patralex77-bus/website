@@ -122,40 +122,38 @@
         </div>
 
         <div id="schoolBlock" class="mt-6 rounded-3xl bg-red-50 p-5 ring-1 ring-red-100">
-          <div class="grid gap-5 lg:grid-cols-[1fr_.8fr] lg:items-start">
-            <label class="text-sm font-bold">Schulangebot auswählen
-              <select id="schoolDestinationSelect" class="field mt-2" name="school_destination_slug">
-                <option value="">Bitte Tour auswählen</option>
-                {% for item in school_destinations %}
-                  <option
-                    value="{{ item.slug }}"
-                    data-title="{{ item.title }}"
-                    data-zone="{{ item.zone }}"
-                    data-category="{{ item.category }}"
-                    data-travel-time="{{ item.travel_time }}"
-                    data-distance-km="{{ item.distance_km }}"
-                    data-drive-hours-one-way="{{ item.drive_hours_one_way }}"
-                    data-standard-wait-hours="{{ item.standard_wait_hours }}"
-                    data-profile-prices='{{ item.profile_prices|tojson|forceescape }}'
-                    data-description="{{ item.description }}"
-                    {% if item.slug == selected_school_slug %}selected{% endif %}
-                  >{{ item.title }}</option>
-                {% endfor %}
-              </select>
-            </label>
+          <label class="block text-sm font-bold">Schulangebot auswählen
+            <select id="schoolDestinationSelect" class="field mt-2" name="school_destination_slug">
+              <option value="">Bitte Tour auswählen</option>
+              {% for item in school_destinations %}
+                <option
+                  value="{{ item.slug }}"
+                  data-title="{{ item.title }}"
+                  data-zone="{{ item.zone }}"
+                  data-category="{{ item.category }}"
+                  data-travel-time="{{ item.travel_time }}"
+                  data-distance-km="{{ item.distance_km }}"
+                  data-drive-hours-one-way="{{ item.drive_hours_one_way }}"
+                  data-standard-wait-hours="{{ item.standard_wait_hours }}"
+                  data-profile-prices='{{ item.profile_prices|tojson|forceescape }}'
+                  data-description="{{ item.description }}"
+                  {% if item.slug == selected_school_slug %}selected{% endif %}
+                >{{ item.title }}</option>
+              {% endfor %}
+            </select>
+          </label>
 
-            <div id="schoolPricePreview" class="rounded-3xl bg-white p-5 shadow-sm">
-              <div class="text-sm font-black uppercase tracking-[.18em] text-red-700">Richtpreis</div>
-              <h3 id="schoolPreviewTitle" class="mt-2 text-2xl font-black">Bitte Tour auswählen</h3>
-              <div id="schoolPreviewPriceCards" class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                <div class="rounded-2xl bg-slate-50 p-4">
-                  <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Preisprofile</div>
-                  <div class="mt-2 text-xl font-black">–</div>
-                </div>
+          <div id="schoolPricePreview" class="mt-4 w-full rounded-3xl bg-white p-5 shadow-sm">
+            <div class="text-sm font-black uppercase tracking-[.18em] text-red-700">Richtpreis</div>
+            <h3 id="schoolPreviewTitle" class="mt-2 text-2xl font-black">Bitte Tour auswählen</h3>
+            <div id="schoolPreviewPriceCards" class="mt-4 grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div class="rounded-2xl bg-slate-50 p-4">
+                <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Preisprofile</div>
+                <div class="mt-2 text-xl font-black">–</div>
               </div>
-              <p id="schoolPreviewMeta" class="mt-4 text-sm leading-6 text-slate-600">Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.</p>
-              <p id="schoolPreviewWarning" class="mt-3 hidden rounded-2xl bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800"></p>
             </div>
+            <p id="schoolPreviewMeta" class="mt-4 text-sm leading-6 text-slate-600">Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.</p>
+            <p id="schoolPreviewWarning" class="mt-3 hidden rounded-2xl bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800"></p>
           </div>
         </div>
 
@@ -300,8 +298,8 @@
               </div>
             </div>
           </div>
-          <div class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-            <div class="rounded-2xl bg-white p-4">
+          <div class="mt-4 text-sm">
+            <div class="w-full rounded-2xl bg-white p-4">
               <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Zeitraum der Busbereitstellung</div>
               <div id="customerTimeRange" class="mt-2 font-black text-slate-950">–</div>
               <p class="mt-2 text-xs leading-5 text-slate-500">
@@ -309,10 +307,6 @@
                 Verzögerungen oder Verlängerungen der Gruppe vor Ort können zusätzliche Kosten verursachen.
                 Bitte geben Sie realistische Zeiten an.
               </p>
-            </div>
-            <div class="rounded-2xl bg-white p-4">
-              <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Berechnete Wartezeit</div>
-              <div id="customerWaitHours" class="mt-2 font-black text-slate-950">–</div>
             </div>
           </div>
           <p id="customerPriceWarning" class="mt-3 hidden rounded-2xl bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800"></p>
@@ -360,7 +354,6 @@
       const customerPriceHint = document.getElementById('customerPriceHint');
       const customerPriceCards = document.getElementById('customerPriceCards');
       const customerTimeRange = document.getElementById('customerTimeRange');
-      const customerWaitHours = document.getElementById('customerWaitHours');
       const customerPriceWarning = document.getElementById('customerPriceWarning');
 
       function selectedRequestKind() {
@@ -428,13 +421,11 @@
             ? calculatePriceForProfile(profile, waitHours)
             : parseNumber(profile.amount);
           const priceText = finalPrices ? formatFinalEuro(amount) : formatEuro(amount);
-          const subtitle = [profile.category, profile.minimum ? 'Mindestpreis ' + Math.round(profile.minimum) + ' €' : ''].filter(Boolean).join(' · ');
 
           return `
             <div class="rounded-2xl ${finalPrices ? 'bg-white' : 'bg-slate-50'} p-4">
               <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">${escapeHtml(profile.name || 'Preisprofil')}</div>
               <div class="mt-2 ${finalPrices ? 'text-2xl' : 'text-xl'} font-black text-slate-950">${escapeHtml(priceText)}</div>
-              ${subtitle ? `<div class="mt-1 text-xs leading-5 text-slate-500">${escapeHtml(subtitle)}</div>` : ''}
             </div>`;
         }).join('');
       }
@@ -476,7 +467,6 @@
         customerPriceHint.textContent = 'Bitte Tour, Abfahrtszeit und Rückkehr auswählen.';
         renderPriceCards(customerPriceCards, [], { finalPrices: true });
         customerTimeRange.textContent = '–';
-        customerWaitHours.textContent = '–';
         customerPriceWarning.classList.add('hidden');
         customerPriceWarning.textContent = '';
       }
@@ -577,7 +567,6 @@
           customerPriceHint.textContent = title;
           renderPriceCards(customerPriceCards, profiles, { finalPrices: true, waitHours });
           customerTimeRange.textContent = timeDepartureInput.value + '–' + timeReturnInput.value;
-          customerWaitHours.textContent = formatHours(waitHours) + ' h';
         } else {
           resetCalculatedPriceBox();
           if (option.value) {
