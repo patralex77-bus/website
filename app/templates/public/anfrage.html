@@ -135,6 +135,19 @@
                     data-travel-time="{{ item.travel_time }}"
                     data-price53="{{ item.price_53_label }}"
                     data-price75="{{ item.price_75_label }}"
+                    data-price53-amount="{{ item.price_53_amount }}"
+                    data-price75-amount="{{ item.price_75_amount }}"
+                    data-distance-km="{{ item.distance_km }}"
+                    data-drive-hours-one-way="{{ item.drive_hours_one_way }}"
+                    data-standard-wait-hours="{{ item.standard_wait_hours }}"
+                    data-p53-km="{{ item.profile_53.km }}"
+                    data-p53-hour="{{ item.profile_53.hour }}"
+                    data-p53-wait="{{ item.profile_53.wait }}"
+                    data-p53-minimum="{{ item.profile_53.minimum }}"
+                    data-p75-km="{{ item.profile_75.km }}"
+                    data-p75-hour="{{ item.profile_75.hour }}"
+                    data-p75-wait="{{ item.profile_75.wait }}"
+                    data-p75-minimum="{{ item.profile_75.minimum }}"
                     data-description="{{ item.description }}"
                     {% if item.slug == selected_school_slug %}selected{% endif %}
                   >{{ item.title }}</option>
@@ -156,6 +169,10 @@
                 </div>
               </div>
               <p id="schoolPreviewMeta" class="mt-4 text-sm leading-6 text-slate-600">Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.</p>
+              <div id="schoolPreviewTime" class="mt-3 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                Geben Sie Abfahrtszeit und Rückkehr ein, damit die Wartezeit und der Richtpreis an Ihre gewünschte Tagesdauer angepasst werden.
+              </div>
+              <p id="schoolPreviewWarning" class="mt-3 hidden rounded-2xl bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800"></p>
             </div>
           </div>
         </div>
@@ -242,10 +259,10 @@
               </div>
               <div class="grid gap-4 sm:grid-cols-2">
                 <label class="text-sm font-bold">Abfahrtszeit
-                  <input class="field mt-2" type="time" name="time_departure" />
+                  <input id="timeDepartureInput" class="field mt-2" type="time" name="time_departure" />
                 </label>
                 <label class="text-sm font-bold">Rückkehr / Ende
-                  <input class="field mt-2" type="time" name="time_return" />
+                  <input id="timeReturnInput" class="field mt-2" type="time" name="time_return" />
                 </label>
               </div>
               <label class="text-sm font-bold"><span id="routeDescriptionLabel">Route, Stopps, Länder, Tagesprogramm</span>
@@ -318,11 +335,15 @@
       const startDateLabel = document.getElementById('startDateLabel');
       const routeDescription = document.getElementById('routeDescription');
       const routeDescriptionLabel = document.getElementById('routeDescriptionLabel');
+      const timeDepartureInput = document.getElementById('timeDepartureInput');
+      const timeReturnInput = document.getElementById('timeReturnInput');
 
       const previewTitle = document.getElementById('schoolPreviewTitle');
       const previewPrice53 = document.getElementById('schoolPreviewPrice53');
       const previewPrice75 = document.getElementById('schoolPreviewPrice75');
       const previewMeta = document.getElementById('schoolPreviewMeta');
+      const previewTime = document.getElementById('schoolPreviewTime');
+      const previewWarning = document.getElementById('schoolPreviewWarning');
 
       function selectedRequestKind() {
         const checked = document.querySelector('input[name="request_kind"]:checked');
@@ -332,12 +353,64 @@
       let previousMode = selectedRequestKind();
       let lastAutoSchoolDestination = '';
 
+      function parseNumber(value) {
+        const parsed = parseFloat(value || '0');
+        return Number.isFinite(parsed) ? parsed : 0;
+      }
+
+      function formatHours(value) {
+        if (!Number.isFinite(value)) return '–';
+        return value.toFixed(2).replace(/\.00$/, '').replace(/0$/, '');
+      }
+
+      function formatEuro(value) {
+        if (!Number.isFinite(value) || value <= 0) return 'auf Anfrage';
+        return 'ab ' + Math.round(value) + ' €';
+      }
+
+      function parseTimeToMinutes(value) {
+        if (!value || !value.includes(':')) return null;
+        const [hours, minutes] = value.split(':').map(Number);
+        if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+        return hours * 60 + minutes;
+      }
+
+      function customerDurationHours() {
+        const start = parseTimeToMinutes(timeDepartureInput.value);
+        let end = parseTimeToMinutes(timeReturnInput.value);
+        if (start === null || end === null) return null;
+        if (end <= start) end += 24 * 60;
+        const duration = (end - start) / 60;
+        if (duration <= 0 || duration > 18) return null;
+        return duration;
+      }
+
+      function calculatePrice(option, prefix, waitHours) {
+        const kmOneWay = parseNumber(option.dataset.distanceKm);
+        const driveHoursOneWay = parseNumber(option.dataset.driveHoursOneWay);
+        const kmRate = parseNumber(option.dataset[prefix + 'Km']);
+        const hourRate = parseNumber(option.dataset[prefix + 'Hour']);
+        const waitRate = parseNumber(option.dataset[prefix + 'Wait']);
+        const minimum = parseNumber(option.dataset[prefix + 'Minimum']);
+
+        if (!kmOneWay || !driveHoursOneWay || !kmRate) {
+          const fallback = parseNumber(option.dataset[prefix === 'p53' ? 'price53Amount' : 'price75Amount']);
+          return fallback || null;
+        }
+
+        const calculated = (kmOneWay * 2 * kmRate) + (driveHoursOneWay * 2 * hourRate) + (waitHours * waitRate);
+        return Math.max(calculated, minimum || 0);
+      }
+
       function resetSchoolSelection() {
         schoolSelect.selectedIndex = 0;
         previewTitle.textContent = 'Bitte Tour auswählen';
         previewPrice53.textContent = '–';
         previewPrice75.textContent = '–';
         previewMeta.textContent = 'Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.';
+        previewTime.textContent = 'Geben Sie Abfahrtszeit und Rückkehr ein, damit die Wartezeit und der Richtpreis an Ihre gewünschte Tagesdauer angepasst werden.';
+        previewWarning.classList.add('hidden');
+        previewWarning.textContent = '';
         lastAutoSchoolDestination = '';
       }
 
@@ -390,6 +463,9 @@
           previewPrice53.textContent = '–';
           previewPrice75.textContent = '–';
           previewMeta.textContent = 'Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.';
+          previewTime.textContent = 'Geben Sie Abfahrtszeit und Rückkehr ein, damit die Wartezeit und der Richtpreis an Ihre gewünschte Tagesdauer angepasst werden.';
+          previewWarning.classList.add('hidden');
+          previewWarning.textContent = '';
           if (selectedRequestKind() === 'school') {
             destinationInput.value = '';
             lastAutoSchoolDestination = '';
@@ -401,14 +477,43 @@
         const zone = option.dataset.zone || '';
         const travelTime = option.dataset.travelTime || '';
         const category = option.dataset.category || '';
-        const price53 = option.dataset.price53 || 'auf Anfrage';
-        const price75 = option.dataset.price75 || 'auf Anfrage';
         const description = option.dataset.description || '';
+        const kmOneWay = parseNumber(option.dataset.distanceKm);
+        const driveHoursOneWay = parseNumber(option.dataset.driveHoursOneWay);
+        const standardWaitHours = parseNumber(option.dataset.standardWaitHours) || 4;
+        const duration = customerDurationHours();
+
+        let waitHours = standardWaitHours;
+        let timeText = '';
+        let warning = '';
+
+        if (duration !== null && driveHoursOneWay > 0) {
+          waitHours = duration - (driveHoursOneWay * 2);
+          if (waitHours < 0) {
+            waitHours = 0;
+            warning = 'Die gewünschte Zeitspanne ist kürzer als die hinterlegte reine Fahrzeit. Bitte Zeiten prüfen.';
+          }
+          timeText = 'Ihre Zeitvorgabe: ' + timeDepartureInput.value + '–' + timeReturnInput.value + ' = ' + formatHours(duration) + ' h gesamt. Berechnete Wartezeit/Aufenthalt: ' + formatHours(waitHours) + ' h.';
+        } else {
+          timeText = 'Standardkalkulation: ' + formatHours(kmOneWay * 2) + ' km Hin + Retour, ' + formatHours(driveHoursOneWay * 2) + ' h Fahrzeit, ' + formatHours(standardWaitHours) + ' h Aufenthalt.';
+        }
+
+        const price53 = calculatePrice(option, 'p53', waitHours);
+        const price75 = calculatePrice(option, 'p75', waitHours);
 
         previewTitle.textContent = title;
-        previewPrice53.textContent = price53;
-        previewPrice75.textContent = price75;
+        previewPrice53.textContent = formatEuro(price53);
+        previewPrice75.textContent = formatEuro(price75);
         previewMeta.textContent = [zone ? 'Zone ' + zone : '', travelTime, category, description].filter(Boolean).join(' · ');
+        previewTime.textContent = timeText;
+
+        if (warning) {
+          previewWarning.textContent = warning;
+          previewWarning.classList.remove('hidden');
+        } else {
+          previewWarning.textContent = '';
+          previewWarning.classList.add('hidden');
+        }
 
         if (selectedRequestKind() === 'school') {
           destinationInput.value = title;
@@ -421,6 +526,8 @@
       });
 
       schoolSelect.addEventListener('change', updateSchoolPreview);
+      timeDepartureInput.addEventListener('change', updateSchoolPreview);
+      timeReturnInput.addEventListener('change', updateSchoolPreview);
       updateMode();
     </script>
   </main>

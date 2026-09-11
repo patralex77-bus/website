@@ -3,13 +3,14 @@ from __future__ import annotations
 import json
 import os
 from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, url_for
 from sqlalchemy import asc, desc
 
 from ..extensions import db
-from ..models import BlogPost, BusRentalRequest, ContactRequest, CustomerReview, SchoolDestination, FleetVehicle
+from ..models import BlogPost, BusRentalRequest, ContactRequest, CustomerReview, SchoolDestination, FleetVehicle, PricingProfile
 from ..utils.csrf import validate_csrf_token
 from ..utils.email_notifications import notify_bus_rental_request, notify_contact_request
 
@@ -311,6 +312,15 @@ def _to_int(value):
         return None
 
 
+def _to_decimal(value, default=None):
+    if value in (None, ""):
+        return default
+    try:
+        return Decimal(str(value).replace(",", "."))
+    except (InvalidOperation, TypeError, ValueError):
+        return default
+
+
 def _format_euro(value) -> str:
     if value in (None, ""):
         return ""
@@ -318,6 +328,152 @@ def _format_euro(value) -> str:
         return f"ab {float(value):.0f} €"
     except (TypeError, ValueError):
         return ""
+
+
+def _format_euro_plain(value) -> str:
+    if value in (None, ""):
+        return ""
+    try:
+        return f"{float(value):.0f} €"
+    except (TypeError, ValueError):
+        return ""
+
+
+def _format_hours(value) -> str:
+    if value in (None, ""):
+        return ""
+    try:
+        dec = Decimal(str(value)).quantize(Decimal("0.01"))
+        text = f"{dec}"
+        return text.rstrip("0").rstrip(".")
+    except Exception:
+        return ""
+
+
+def _default_school_profile(seat_hint: str):
+    profiles = PricingProfile.query.filter_by(is_active=True).order_by(PricingProfile.name.asc()).all()
+    hint = seat_hint.lower()
+
+    for profile in profiles:
+        haystack = f"{profile.name} {profile.bus_category}".lower()
+        if hint in haystack:
+            return profile
+
+    if hint in {"77", "75", "doppeldecker"}:
+        for profile in profiles:
+            haystack = f"{profile.name} {profile.bus_category}".lower()
+            if "doppel" in haystack or "77" in haystack or "75" in haystack:
+                return profile
+
+    return profiles[0] if profiles else None
+
+
+def _profile_payload(profile: PricingProfile | None) -> dict:
+    if not profile:
+        return {
+            "id": "",
+            "name": "",
+            "km": "",
+            "hour": "",
+            "wait": "",
+            "minimum": "",
+        }
+
+    return {
+        "id": profile.id,
+        "name": profile.name or "",
+        "km": float(profile.price_per_km or 0),
+        "hour": float(profile.hourly_rate or 0),
+        "wait": float(profile.waiting_hourly_rate or 0),
+        "minimum": float(profile.minimum_day_rate or 0),
+    }
+
+
+def _time_to_minutes(value: str | None):
+    if not value:
+        return None
+    try:
+        parts = value.split(":")
+        return int(parts[0]) * 60 + int(parts[1])
+    except Exception:
+        return None
+
+
+def _duration_hours(start_time: str | None, end_time: str | None):
+    start_minutes = _time_to_minutes(start_time)
+    end_minutes = _time_to_minutes(end_time)
+    if start_minutes is None or end_minutes is None:
+        return None
+
+    if end_minutes <= start_minutes:
+        end_minutes += 24 * 60
+
+    duration = Decimal(end_minutes - start_minutes) / Decimal("60")
+    if duration <= 0 or duration > 18:
+        return None
+    return duration
+
+
+def _school_price_value(profile: PricingProfile | None, distance_km_one_way, drive_hours_one_way, wait_hours):
+    if not profile:
+        return None
+
+    distance = _to_decimal(distance_km_one_way)
+    drive_hours = _to_decimal(drive_hours_one_way)
+    waiting_hours = _to_decimal(wait_hours, Decimal("0"))
+
+    if distance is None or drive_hours is None or distance <= 0 or drive_hours <= 0:
+        return None
+
+    total_km = distance * Decimal("2")
+    total_drive_hours = drive_hours * Decimal("2")
+
+    calculated = (
+        total_km * Decimal(profile.price_per_km or 0)
+        + total_drive_hours * Decimal(profile.hourly_rate or 0)
+        + waiting_hours * Decimal(profile.waiting_hourly_rate or 0)
+    )
+    minimum = Decimal(profile.minimum_day_rate or 0)
+    final = calculated if calculated >= minimum else minimum
+    return final.quantize(Decimal("1"))
+
+
+def _school_pricing_context(destination: SchoolDestination, start_time: str | None = None, end_time: str | None = None) -> dict:
+    pricing = destination.pricing
+
+    drive_minutes = pricing.drive_minutes_one_way if pricing else None
+    stay_minutes = pricing.stay_minutes if pricing else None
+
+    drive_hours_one_way = (Decimal(drive_minutes) / Decimal("60")) if drive_minutes is not None else None
+    standard_wait_hours = (Decimal(stay_minutes) / Decimal("60")) if stay_minutes is not None else Decimal("4")
+
+    customer_total_hours = _duration_hours(start_time, end_time)
+    adjusted_wait_hours = standard_wait_hours
+    time_warning = ""
+
+    if customer_total_hours is not None and drive_hours_one_way is not None:
+        adjusted_wait_hours = customer_total_hours - (drive_hours_one_way * Decimal("2"))
+        if adjusted_wait_hours < 0:
+            adjusted_wait_hours = Decimal("0")
+            time_warning = "Die gewünschte Zeitspanne ist kürzer als die hinterlegte reine Fahrzeit. Bitte Zeiten prüfen."
+
+    profile_53 = pricing.profile_53 if pricing and pricing.profile_53 else _default_school_profile("53")
+    profile_75 = pricing.profile_75 if pricing and pricing.profile_75 else _default_school_profile("doppeldecker")
+
+    price_53 = _school_price_value(profile_53, destination.distance_km, drive_hours_one_way, adjusted_wait_hours)
+    price_75 = _school_price_value(profile_75, destination.distance_km, drive_hours_one_way, adjusted_wait_hours)
+
+    return {
+        "drive_hours_one_way": drive_hours_one_way,
+        "standard_wait_hours": standard_wait_hours,
+        "customer_total_hours": customer_total_hours,
+        "adjusted_wait_hours": adjusted_wait_hours,
+        "time_warning": time_warning,
+        "profile_53": profile_53,
+        "profile_75": profile_75,
+        "price_53": price_53,
+        "price_75": price_75,
+    }
 
 
 def _school_offer_options():
@@ -328,24 +484,34 @@ def _school_offer_options():
         .all()
     )
 
-    return [
-        {
+    options = []
+    for d in destinations:
+        ctx = _school_pricing_context(d)
+        options.append({
             "slug": d.slug,
             "title": d.title,
             "zone": d.zone,
             "category": d.category,
             "travel_time": d.travel_time or "",
             "description": d.short_description or "",
-            "price_53_label": _format_euro(d.price_53),
-            "price_75_label": _format_euro(d.price_75),
-        }
-        for d in destinations
-    ]
+            "distance_km": float(d.distance_km or 0),
+            "drive_hours_one_way": float(ctx["drive_hours_one_way"] or 0),
+            "standard_wait_hours": float(ctx["standard_wait_hours"] or 0),
+            "price_53_label": _format_euro(ctx["price_53"] or d.price_53),
+            "price_75_label": _format_euro(ctx["price_75"] or d.price_75),
+            "price_53_amount": float(ctx["price_53"] or d.price_53 or 0),
+            "price_75_amount": float(ctx["price_75"] or d.price_75 or 0),
+            "profile_53": _profile_payload(ctx["profile_53"]),
+            "profile_75": _profile_payload(ctx["profile_75"]),
+        })
+    return options
 
 
-def _school_offer_summary(destination: SchoolDestination | None) -> str:
+def _school_offer_summary(destination: SchoolDestination | None, start_time: str | None = None, end_time: str | None = None) -> str:
     if not destination:
         return ""
+
+    ctx = _school_pricing_context(destination, start_time, end_time)
 
     lines = [
         "Gewähltes Schulangebot:",
@@ -356,11 +522,32 @@ def _school_offer_summary(destination: SchoolDestination | None) -> str:
     if destination.category:
         lines.append(f"- Kategorie: {destination.category}")
     if destination.travel_time:
-        lines.append(f"- Fahrtzeit: {destination.travel_time}")
-    if destination.price_53:
-        lines.append(f"- Richtpreis 53 Plätze: {_format_euro(destination.price_53)}")
-    if destination.price_75:
-        lines.append(f"- Richtpreis Doppeldecker: {_format_euro(destination.price_75)}")
+        lines.append(f"- Fahrtzeit Info: {destination.travel_time}")
+    if destination.distance_km:
+        lines.append(f"- Entfernung: {_format_hours(destination.distance_km)} km einfach / {_format_hours(Decimal(destination.distance_km) * Decimal('2'))} km Hin + Retour")
+
+    if ctx["drive_hours_one_way"] is not None:
+        lines.append(f"- Hinterlegte Fahrzeit: {_format_hours(ctx['drive_hours_one_way'])} h einfach / {_format_hours(ctx['drive_hours_one_way'] * Decimal('2'))} h Hin + Retour")
+
+    if start_time and end_time and ctx["customer_total_hours"] is not None:
+        lines.append(f"- Kundenvorgabe Zeit: {start_time}–{end_time} = {_format_hours(ctx['customer_total_hours'])} h gesamt")
+        lines.append(f"- Daraus berechnete Wartezeit/Aufenthalt: {_format_hours(ctx['adjusted_wait_hours'])} h")
+    else:
+        lines.append(f"- Standard-Wartezeit/Aufenthalt: {_format_hours(ctx['standard_wait_hours'])} h")
+
+    if ctx["time_warning"]:
+        lines.append(f"- Hinweis: {ctx['time_warning']}")
+
+    if ctx["price_53"]:
+        lines.append(f"- Angepasster Richtpreis 53 Plätze: {_format_euro_plain(ctx['price_53'])} inkl. 10% USt")
+    elif destination.price_53:
+        lines.append(f"- Richtpreis 53 Plätze: {_format_euro(destination.price_53)} inkl. 10% USt")
+
+    if ctx["price_75"]:
+        lines.append(f"- Angepasster Richtpreis Doppeldecker: {_format_euro_plain(ctx['price_75'])} inkl. 10% USt")
+    elif destination.price_75:
+        lines.append(f"- Richtpreis Doppeldecker: {_format_euro(destination.price_75)} inkl. 10% USt")
+
     if destination.short_description:
         lines.append(f"- Beschreibung: {destination.short_description}")
 
@@ -435,7 +622,7 @@ def anfrage():
             return redirect(url_for("public.anfrage", type=request_kind, school=selected_school_slug))
 
         base_route_description = request.form.get("route_description", "").strip()
-        school_summary = _school_offer_summary(selected_school)
+        school_summary = _school_offer_summary(selected_school, request.form.get("time_departure"), request.form.get("time_return"))
         route_parts = []
         if school_summary:
             route_parts.append(school_summary)
