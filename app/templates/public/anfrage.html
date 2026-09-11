@@ -319,14 +319,15 @@
               </div>
             </div>
           </div>
-          <div class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+          <div class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
             <div class="rounded-2xl bg-white p-4">
-              <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Zeitraum</div>
+              <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Zeitraum der Busbereitstellung</div>
               <div id="customerTimeRange" class="mt-2 font-black text-slate-950">–</div>
-            </div>
-            <div class="rounded-2xl bg-white p-4">
-              <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Gesamtzeit</div>
-              <div id="customerTotalHours" class="mt-2 font-black text-slate-950">–</div>
+              <p class="mt-2 text-xs leading-5 text-slate-500">
+                Dieser Zeitraum gilt als geplante Einsatzzeit des Busses von der Abfahrt bis zur Rückkehr bzw. bis zum Ende der Leistung.
+                Verzögerungen oder Verlängerungen der Gruppe vor Ort können zusätzliche Kosten verursachen.
+                Bitte geben Sie realistische Zeiten an.
+              </p>
             </div>
             <div class="rounded-2xl bg-white p-4">
               <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Berechnete Wartezeit</div>
@@ -380,7 +381,6 @@
       const customerPrice53 = document.getElementById('customerPrice53');
       const customerPrice75 = document.getElementById('customerPrice75');
       const customerTimeRange = document.getElementById('customerTimeRange');
-      const customerTotalHours = document.getElementById('customerTotalHours');
       const customerWaitHours = document.getElementById('customerWaitHours');
       const customerPriceWarning = document.getElementById('customerPriceWarning');
 
@@ -405,6 +405,11 @@
       function formatEuro(value) {
         if (!Number.isFinite(value) || value <= 0) return 'auf Anfrage';
         return 'ab ' + Math.round(value) + ' €';
+      }
+
+      function formatFinalEuro(value) {
+        if (!Number.isFinite(value) || value <= 0) return 'auf Anfrage';
+        return Math.round(value) + ' €';
       }
 
       function parseTimeToMinutes(value) {
@@ -446,7 +451,6 @@
         customerPrice53.textContent = '–';
         customerPrice75.textContent = '–';
         customerTimeRange.textContent = '–';
-        customerTotalHours.textContent = '–';
         customerWaitHours.textContent = '–';
         customerPriceWarning.classList.add('hidden');
         customerPriceWarning.textContent = '';
@@ -555,10 +559,9 @@
           const customerPrice75Value = calculatePrice(option, 'p75', waitHours);
 
           customerPriceHint.textContent = title;
-          customerPrice53.textContent = formatEuro(customerPrice53Value);
-          customerPrice75.textContent = formatEuro(customerPrice75Value);
+          customerPrice53.textContent = formatFinalEuro(customerPrice53Value);
+          customerPrice75.textContent = formatFinalEuro(customerPrice75Value);
           customerTimeRange.textContent = timeDepartureInput.value + '–' + timeReturnInput.value;
-          customerTotalHours.textContent = formatHours(duration) + ' h';
           customerWaitHours.textContent = formatHours(waitHours) + ' h';
         } else {
           resetCalculatedPriceBox();
