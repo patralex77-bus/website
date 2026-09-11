@@ -11,13 +11,14 @@ from werkzeug.security import check_password_hash
 
 from ..extensions import db
 from ..models import (
-    AdminUser, BlogPost, CustomerReview, MediaFile, SchoolDestination, SchoolDestinationPricing,
+    AdminUser, BlogPost, CustomerReview, ContactRequest, MediaFile, SchoolDestination, SchoolDestinationPricing,
     FleetVehicle, BusRentalRequest, PricingProfile, PricingCalculation, utcnow
 )
 from ..utils.csrf import validate_csrf_token
 from ..utils.slug import slugify
 from ..utils.uploads import save_uploaded_image
 from ..utils.pricing import calculate_price
+from ..utils.email_notifications import get_email_settings, send_test_notification
 
 
 admin_bp = Blueprint("admin", __name__)
