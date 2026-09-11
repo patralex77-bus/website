@@ -150,6 +150,15 @@ def schulen():
         .all()
     )
 
+    # Add dynamic prices for every active pricing profile to each destination.
+    # These are transient attributes only; nothing is written to the database.
+    for destination in destinations:
+        try:
+            pricing_context = _school_pricing_context(destination)
+            destination.public_profile_prices = pricing_context.get("profile_prices", [])
+        except Exception:
+            destination.public_profile_prices = []
+
     zones = {
         "A": {"label": "Zone A", "distance": "bis 40 km", "price53": "ab 490 €", "price75": "ab 690 €", "tone": "red", "text": "Kurze Fahrten, ideal für Halbtagsprogramme oder kurze Ganztagesausflüge."},
         "B": {"label": "Zone B", "distance": "bis 90 km", "price53": "ab 690 €", "price75": "ab 890 €", "tone": "amber", "text": "Klassische Tagesfahrten rund um Wien mit gutem Verhältnis aus Fahrzeit und Aufenthalt."},
