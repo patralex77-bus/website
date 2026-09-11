@@ -1,10 +1,99 @@
+{% macro nav_item(endpoint, label) -%}
+  {% set active = request.endpoint == endpoint %}
+  <a href="{{ url_for(endpoint) }}"
+     class="rounded-xl px-3 py-2 transition {% if active %}bg-red-700 text-white{% else %}bg-white/10 text-slate-100 hover:bg-white/20{% endif %}">
+    {{ label }}
+  </a>
+{%- endmacro %}
+
+{% macro nav_external(endpoint, label) -%}
+  <a href="{{ url_for(endpoint) }}" target="_blank"
+     class="rounded-xl bg-red-700 px-3 py-2 text-white transition hover:bg-red-800">
+    {{ label }}
+  </a>
+{%- endmacro %}
+
 <!doctype html>
 <html lang="de">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{% block title %}Admin – Austria Express{% endblock %}</title><script src="https://cdn.tailwindcss.com"></script><link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}"></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Admin – Austria Express{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
+</head>
 <body class="bg-slate-100 text-slate-900">
-<header class="bg-slate-950 text-white"><div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8"><div><div class="text-2xl font-black">Austria Express Admin</div><div class="text-sm text-slate-400">Full Backend v2</div></div><nav class="flex flex-wrap gap-3 text-sm font-bold"><a href="{{ url_for('admin.dashboard') }}" class="rounded-xl bg-white/10 px-4 py-2 hover:bg-white/20">Dashboard</a><a href="{{ url_for('admin.posts_list') }}" class="rounded-xl bg-white/10 px-4 py-2">Beiträge</a><a href="{{ url_for('admin.reviews_list') }}" class="rounded-xl bg-white/10 px-4 py-2">Bewertungen</a><a href="{{ url_for('admin.school_destinations_list') }}" class="rounded-xl bg-white/10 px-4 py-2">Schulen</a><a href="{{ url_for('admin.school_pricing_bulk') }}" class="rounded-xl bg-white/10 px-4 py-2">Schulpreise</a><a href="{{ url_for('admin.fleet_list') }}" class="rounded-xl bg-white/10 px-4 py-2">Fuhrpark</a><a href="{{ url_for('admin.contact_requests_list') }}" class="rounded-xl px-4 py-2 font-bold hover:bg-slate-100">Kontakt</a>
-          <a href="{{ url_for('admin.bus_requests_list') }}" class="rounded-xl bg-white/10 px-4 py-2">Anfragen</a><a href="{{ url_for('admin.email_settings') }}" class="rounded-xl px-4 py-2 font-bold hover:bg-slate-100">E-Mail</a>
-          <a href="{{ url_for('admin.pricing_profiles') }}" class="rounded-xl bg-white/10 px-4 py-2">Pricing</a><a href="{{ url_for('admin.media_list') }}" class="rounded-xl bg-white/10 px-4 py-2">Medien</a><a href="{{ url_for('public.schulen') }}" class="rounded-xl bg-red-700 px-4 py-2">Public</a><form method="post" action="{{ url_for('admin.logout') }}"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="rounded-xl bg-white/10 px-4 py-2">Logout</button></form></nav></div></header>
-{% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="mx-auto max-w-7xl px-4 pt-6">{% for category, message in messages %}<div class="mb-3 rounded-2xl px-5 py-4 font-bold {% if category == 'error' %}bg-red-50 text-red-800{% else %}bg-green-50 text-green-800{% endif %}">{{ message }}</div>{% endfor %}</div>{% endif %}{% endwith %}
-<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{% block content %}{% endblock %}</main>
-</body></html>
+<header class="bg-slate-950 text-white">
+  <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div>
+        <div class="text-2xl font-black">Austria Express Admin</div>
+        <div class="text-sm text-slate-400">Backoffice · Full Backend v2</div>
+      </div>
+
+      <div class="flex flex-wrap gap-2 text-sm font-bold">
+        {{ nav_item('admin.dashboard', 'Dashboard') }}
+        {{ nav_external('public.schulen', 'Public') }}
+        <form method="post" action="{{ url_for('admin.logout') }}">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <button class="rounded-xl bg-white/10 px-3 py-2 text-slate-100 transition hover:bg-white/20">Logout</button>
+        </form>
+      </div>
+    </div>
+
+    <nav class="mt-5 grid gap-3 text-sm font-bold md:grid-cols-2 xl:grid-cols-4">
+      <section class="rounded-2xl bg-white/5 p-3 ring-1 ring-white/10">
+        <div class="mb-2 px-1 text-[11px] font-black uppercase tracking-[.18em] text-slate-400">Anfragen & Kunden</div>
+        <div class="flex flex-wrap gap-2">
+          {{ nav_item('admin.bus_requests_list', 'Anfragen') }}
+          {{ nav_item('admin.contact_requests_list', 'Kontakt') }}
+          {{ nav_item('admin.reviews_list', 'Bewertungen') }}
+        </div>
+      </section>
+
+      <section class="rounded-2xl bg-white/5 p-3 ring-1 ring-white/10">
+        <div class="mb-2 px-1 text-[11px] font-black uppercase tracking-[.18em] text-slate-400">Preise & Angebote</div>
+        <div class="flex flex-wrap gap-2">
+          {{ nav_item('admin.school_pricing_bulk', 'Schulpreise') }}
+          {{ nav_item('admin.pricing_profiles', 'Preisprofile') }}
+        </div>
+      </section>
+
+      <section class="rounded-2xl bg-white/5 p-3 ring-1 ring-white/10">
+        <div class="mb-2 px-1 text-[11px] font-black uppercase tracking-[.18em] text-slate-400">Website-Inhalte</div>
+        <div class="flex flex-wrap gap-2">
+          {{ nav_item('admin.posts_list', 'Beiträge') }}
+          {{ nav_item('admin.school_destinations_list', 'Schulen') }}
+          {{ nav_item('admin.fleet_list', 'Fuhrpark') }}
+          {{ nav_item('admin.media_list', 'Medien') }}
+        </div>
+      </section>
+
+      <section class="rounded-2xl bg-white/5 p-3 ring-1 ring-white/10">
+        <div class="mb-2 px-1 text-[11px] font-black uppercase tracking-[.18em] text-slate-400">System</div>
+        <div class="flex flex-wrap gap-2">
+          {{ nav_item('admin.email_settings', 'E-Mail') }}
+          {{ nav_external('public.schulen', 'Website ansehen') }}
+        </div>
+      </section>
+    </nav>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+      {% for category, message in messages %}
+        <div class="mb-3 rounded-2xl px-5 py-4 font-bold {% if category == 'error' %}bg-red-50 text-red-800{% else %}bg-green-50 text-green-800{% endif %}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>
