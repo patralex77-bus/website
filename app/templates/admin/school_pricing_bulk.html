@@ -20,7 +20,7 @@
       <select class="field mt-2" name="profile_53_id">
         {% for profile in profiles %}
           <option value="{{ profile.id }}" {% if profile_53 and profile.id == profile_53.id %}selected{% endif %}>
-            {{ profile.name }} · {{ profile.price_per_km }} €/km · {{ profile.hourly_rate }} €/h
+            {{ profile.name }} · {{ profile.price_per_km }} €/km · {{ profile.hourly_rate }} €/h · inkl. USt
           </option>
         {% endfor %}
       </select>
@@ -30,7 +30,7 @@
       <select class="field mt-2" name="profile_75_id">
         {% for profile in profiles %}
           <option value="{{ profile.id }}" {% if profile_75 and profile.id == profile_75.id %}selected{% endif %}>
-            {{ profile.name }} · {{ profile.price_per_km }} €/km · {{ profile.hourly_rate }} €/h
+            {{ profile.name }} · {{ profile.price_per_km }} €/km · {{ profile.hourly_rate }} €/h · inkl. USt
           </option>
         {% endfor %}
       </select>
@@ -44,8 +44,12 @@
     <span class="font-bold text-slate-900">(km Hin + Retour) × km-Preis</span> +
     <span class="font-bold text-slate-900">(Zeit Hin + Retour) × Stundenpreis Fahrer</span> +
     <span class="font-bold text-slate-900">Wartezeit × Wartezeitpreis</span>.
-    Danach gilt: wenn Netto unter dem Mindestpreis des Profils liegt, wird der Mindestpreis verwendet; danach wird die USt berechnet.
+    Danach gilt: wenn die berechnete Endsumme unter dem Mindestpreis des Profils liegt, wird der Mindestpreis verwendet. Die 10% USt sind bereits in diesen Richtpreisen enthalten.
   </div>
+</div>
+
+<div class="mb-6 rounded-2xl bg-emerald-50 p-4 text-sm font-bold leading-6 text-emerald-800">
+  Wichtig: Die hier berechneten Schulpreise sind Endpreise inkl. 10% USt. Keine zusätzliche USt wird aufgeschlagen.
 </div>
 
 <form method="post" class="rounded-[2rem] bg-white p-4 shadow-sm">
@@ -125,7 +129,7 @@
   </div>
 
   <div class="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
-    <p class="text-sm text-slate-500">Beim Speichern werden die berechneten Brutto-Richtpreise in den Destinationen gespeichert. Die Eingabe erfolgt in Stunden; intern wird sie weiterhin in Minuten gespeichert.</p>
+    <p class="text-sm text-slate-500">Beim Speichern werden die berechneten Richtpreise inkl. 10% USt in den Destinationen gespeichert. Die Eingabe erfolgt in Stunden; intern wird sie weiterhin in Minuten gespeichert.</p>
     <button class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">Alle Preise berechnen & speichern</button>
   </div>
 </form>
@@ -150,17 +154,16 @@
     const driverTimeCost = totalDriveHours * (profile.hourly_rate || 0);
     const waitingCost = waitingHours * (profile.waiting_hourly_rate || 0);
 
-    const calculatedNet = kmCost + driverTimeCost + waitingCost;
-    const finalNet = Math.max(calculatedNet, profile.minimum_day_rate || 0);
-    const gross = finalNet * (1 + ((profile.vat_percent || 0) / 100));
+    const calculatedTotal = kmCost + driverTimeCost + waitingCost;
+    const finalTotal = Math.max(calculatedTotal, profile.minimum_day_rate || 0);
 
     return {
       totalKm,
       totalDriveHours,
-      calculatedNet,
-      finalNet,
-      gross,
-      minimumApplied: finalNet > calculatedNet
+      calculatedTotal,
+      finalTotal,
+      gross: finalTotal,
+      minimumApplied: finalTotal > calculatedTotal
     };
   }
 

@@ -283,16 +283,18 @@ def default_school_profile(seat_hint: str):
 
 
 def calculate_school_destination_price(profile: PricingProfile | None, distance_km_one_way, drive_hours_one_way, stay_hours):
-    """Calculate the public gross school day-trip price.
+    """Calculate the public school day-trip Richtpreis.
+
+    All profile values are treated as final customer prices incl. 10% USt.
+    VAT is not added again here.
 
     Formula:
     (Hin + Retour km) * km price
     + (Hin + Retour Fahrtzeit) * driver hour price
     + Wartezeit/Aufenthalt * waiting hour price
-    = net price
+    = final customer price incl. USt.
 
-    If net price is below the profile minimum day rate, the minimum day rate is used.
-    VAT is added after the minimum check.
+    If this value is below the profile minimum day rate, the minimum day rate is used.
     """
     if not profile:
         return None
@@ -313,13 +315,14 @@ def calculate_school_destination_price(profile: PricingProfile | None, distance_
     driver_time_cost = total_drive_hours * Decimal(profile.hourly_rate or 0)
     waiting_cost = waiting_hours * Decimal(profile.waiting_hourly_rate or 0)
 
-    calculated_net = km_cost + driver_time_cost + waiting_cost
+    calculated_total = km_cost + driver_time_cost + waiting_cost
     minimum = Decimal(profile.minimum_day_rate or 0)
-    final_net = minimum if calculated_net < minimum else calculated_net
 
-    gross_total = final_net * (Decimal("1") + (Decimal(profile.vat_percent or 0) / Decimal("100")))
-    return gross_total.quantize(Decimal("1"))
+    final_total = calculated_total
+    if final_total < minimum:
+        final_total = minimum
 
+    return final_total.quantize(Decimal("1"))
 
 def school_pricing_row(destination: SchoolDestination, profile_53: PricingProfile | None, profile_75: PricingProfile | None) -> dict:
     pricing = destination.pricing
