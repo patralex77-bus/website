@@ -169,9 +169,6 @@
                 </div>
               </div>
               <p id="schoolPreviewMeta" class="mt-4 text-sm leading-6 text-slate-600">Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.</p>
-              <div id="schoolPreviewTime" class="mt-3 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-                Geben Sie Abfahrtszeit und Rückkehr ein, damit die Wartezeit und der Richtpreis an Ihre gewünschte Tagesdauer angepasst werden.
-              </div>
               <p id="schoolPreviewWarning" class="mt-3 hidden rounded-2xl bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800"></p>
             </div>
           </div>
@@ -304,6 +301,41 @@
           </section>
         </div>
 
+        <div id="schoolCalculatedPriceBlock" class="mt-6 hidden rounded-[2rem] border border-red-100 bg-red-50 p-5 shadow-sm">
+          <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Berechnung nach Zeitangaben</p>
+              <h2 class="mt-2 text-2xl font-black text-slate-950">Berechneter Preis lt. Ihren Angaben</h2>
+              <p id="customerPriceHint" class="mt-2 text-sm leading-6 text-slate-600">Bitte Tour, Abfahrtszeit und Rückkehr auswählen.</p>
+            </div>
+            <div class="grid gap-3 text-sm sm:grid-cols-2 lg:min-w-[380px]">
+              <div class="rounded-2xl bg-white p-4">
+                <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">53 Plätze</div>
+                <div id="customerPrice53" class="mt-2 text-2xl font-black text-slate-950">–</div>
+              </div>
+              <div class="rounded-2xl bg-white p-4">
+                <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Doppeldecker</div>
+                <div id="customerPrice75" class="mt-2 text-2xl font-black text-slate-950">–</div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+            <div class="rounded-2xl bg-white p-4">
+              <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Zeitraum</div>
+              <div id="customerTimeRange" class="mt-2 font-black text-slate-950">–</div>
+            </div>
+            <div class="rounded-2xl bg-white p-4">
+              <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Gesamtzeit</div>
+              <div id="customerTotalHours" class="mt-2 font-black text-slate-950">–</div>
+            </div>
+            <div class="rounded-2xl bg-white p-4">
+              <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Berechnete Wartezeit</div>
+              <div id="customerWaitHours" class="mt-2 font-black text-slate-950">–</div>
+            </div>
+          </div>
+          <p id="customerPriceWarning" class="mt-3 hidden rounded-2xl bg-amber-50 p-4 text-sm font-bold leading-6 text-amber-800"></p>
+        </div>
+
         <div class="mt-6 rounded-3xl bg-slate-900 p-5 text-white">
           <div class="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
@@ -342,8 +374,15 @@
       const previewPrice53 = document.getElementById('schoolPreviewPrice53');
       const previewPrice75 = document.getElementById('schoolPreviewPrice75');
       const previewMeta = document.getElementById('schoolPreviewMeta');
-      const previewTime = document.getElementById('schoolPreviewTime');
       const previewWarning = document.getElementById('schoolPreviewWarning');
+      const calculatedPriceBlock = document.getElementById('schoolCalculatedPriceBlock');
+      const customerPriceHint = document.getElementById('customerPriceHint');
+      const customerPrice53 = document.getElementById('customerPrice53');
+      const customerPrice75 = document.getElementById('customerPrice75');
+      const customerTimeRange = document.getElementById('customerTimeRange');
+      const customerTotalHours = document.getElementById('customerTotalHours');
+      const customerWaitHours = document.getElementById('customerWaitHours');
+      const customerPriceWarning = document.getElementById('customerPriceWarning');
 
       function selectedRequestKind() {
         const checked = document.querySelector('input[name="request_kind"]:checked');
@@ -402,15 +441,26 @@
         return Math.max(calculated, minimum || 0);
       }
 
+      function resetCalculatedPriceBox() {
+        customerPriceHint.textContent = 'Bitte Tour, Abfahrtszeit und Rückkehr auswählen.';
+        customerPrice53.textContent = '–';
+        customerPrice75.textContent = '–';
+        customerTimeRange.textContent = '–';
+        customerTotalHours.textContent = '–';
+        customerWaitHours.textContent = '–';
+        customerPriceWarning.classList.add('hidden');
+        customerPriceWarning.textContent = '';
+      }
+
       function resetSchoolSelection() {
         schoolSelect.selectedIndex = 0;
         previewTitle.textContent = 'Bitte Tour auswählen';
         previewPrice53.textContent = '–';
         previewPrice75.textContent = '–';
         previewMeta.textContent = 'Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.';
-        previewTime.textContent = 'Geben Sie Abfahrtszeit und Rückkehr ein, damit die Wartezeit und der Richtpreis an Ihre gewünschte Tagesdauer angepasst werden.';
         previewWarning.classList.add('hidden');
         previewWarning.textContent = '';
+        resetCalculatedPriceBox();
         lastAutoSchoolDestination = '';
       }
 
@@ -439,6 +489,7 @@
         destinationField.classList.toggle('hidden', isSchool);
         daysField.classList.toggle('hidden', isSchool);
         endDateField.classList.toggle('hidden', isSchool);
+        calculatedPriceBlock.classList.toggle('hidden', !isSchool);
 
         startDateLabel.textContent = isSchool ? 'Gewünschtes Datum' : 'Startdatum';
         routeDescriptionLabel.textContent = isSchool ? 'Wünsche / Anmerkungen zum Programm' : 'Route, Stopps, Länder, Tagesprogramm';
@@ -463,9 +514,9 @@
           previewPrice53.textContent = '–';
           previewPrice75.textContent = '–';
           previewMeta.textContent = 'Zone, Fahrtzeit und Kurzbeschreibung erscheinen nach der Auswahl.';
-          previewTime.textContent = 'Geben Sie Abfahrtszeit und Rückkehr ein, damit die Wartezeit und der Richtpreis an Ihre gewünschte Tagesdauer angepasst werden.';
           previewWarning.classList.add('hidden');
           previewWarning.textContent = '';
+          resetCalculatedPriceBox();
           if (selectedRequestKind() === 'school') {
             destinationInput.value = '';
             lastAutoSchoolDestination = '';
@@ -483,36 +534,49 @@
         const standardWaitHours = parseNumber(option.dataset.standardWaitHours) || 4;
         const duration = customerDurationHours();
 
-        let waitHours = standardWaitHours;
-        let timeText = '';
+        const standardPrice53 = calculatePrice(option, 'p53', standardWaitHours);
+        const standardPrice75 = calculatePrice(option, 'p75', standardWaitHours);
+
+        previewTitle.textContent = title;
+        previewPrice53.textContent = formatEuro(standardPrice53);
+        previewPrice75.textContent = formatEuro(standardPrice75);
+        previewMeta.textContent = [zone ? 'Zone ' + zone : '', travelTime, category, description].filter(Boolean).join(' · ');
+
         let warning = '';
 
         if (duration !== null && driveHoursOneWay > 0) {
-          waitHours = duration - (driveHoursOneWay * 2);
+          let waitHours = duration - (driveHoursOneWay * 2);
           if (waitHours < 0) {
             waitHours = 0;
             warning = 'Die gewünschte Zeitspanne ist kürzer als die hinterlegte reine Fahrzeit. Bitte Zeiten prüfen.';
           }
-          timeText = 'Ihre Zeitvorgabe: ' + timeDepartureInput.value + '–' + timeReturnInput.value + ' = ' + formatHours(duration) + ' h gesamt. Berechnete Wartezeit/Aufenthalt: ' + formatHours(waitHours) + ' h.';
+
+          const customerPrice53Value = calculatePrice(option, 'p53', waitHours);
+          const customerPrice75Value = calculatePrice(option, 'p75', waitHours);
+
+          customerPriceHint.textContent = title;
+          customerPrice53.textContent = formatEuro(customerPrice53Value);
+          customerPrice75.textContent = formatEuro(customerPrice75Value);
+          customerTimeRange.textContent = timeDepartureInput.value + '–' + timeReturnInput.value;
+          customerTotalHours.textContent = formatHours(duration) + ' h';
+          customerWaitHours.textContent = formatHours(waitHours) + ' h';
         } else {
-          timeText = 'Standardkalkulation: ' + formatHours(kmOneWay * 2) + ' km Hin + Retour, ' + formatHours(driveHoursOneWay * 2) + ' h Fahrzeit, ' + formatHours(standardWaitHours) + ' h Aufenthalt.';
+          resetCalculatedPriceBox();
+          if (option.value) {
+            customerPriceHint.textContent = 'Bitte Abfahrtszeit und Rückkehr eingeben, damit der Preis nach Ihren Angaben berechnet werden kann.';
+          }
         }
-
-        const price53 = calculatePrice(option, 'p53', waitHours);
-        const price75 = calculatePrice(option, 'p75', waitHours);
-
-        previewTitle.textContent = title;
-        previewPrice53.textContent = formatEuro(price53);
-        previewPrice75.textContent = formatEuro(price75);
-        previewMeta.textContent = [zone ? 'Zone ' + zone : '', travelTime, category, description].filter(Boolean).join(' · ');
-        previewTime.textContent = timeText;
 
         if (warning) {
           previewWarning.textContent = warning;
           previewWarning.classList.remove('hidden');
+          customerPriceWarning.textContent = warning;
+          customerPriceWarning.classList.remove('hidden');
         } else {
           previewWarning.textContent = '';
           previewWarning.classList.add('hidden');
+          customerPriceWarning.textContent = '';
+          customerPriceWarning.classList.add('hidden');
         }
 
         if (selectedRequestKind() === 'school') {
