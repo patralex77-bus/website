@@ -3,15 +3,16 @@ from __future__ import annotations
 from functools import wraps
 from decimal import Decimal
 from urllib.parse import quote
+from pathlib import Path
 
 from flask import (
-    Blueprint, flash, redirect, render_template, request, session, url_for
+    Blueprint, current_app, flash, redirect, render_template, request, session, url_for
 )
 from werkzeug.security import check_password_hash
 
 from ..extensions import db
 from ..models import (
-    AdminUser, BlogPost, CustomerReview, ContactRequest, MediaFile, SchoolDestination, SchoolDestinationPricing,
+    AdminUser, BlogPost, CustomerReview, ContactRequest, MediaFile, SchoolDestination, DestinationImage, SchoolDestinationPricing,
     FleetVehicle, VehicleImage, BusRentalRequest, PricingProfile, PricingCalculation, utcnow
 )
 from ..utils.csrf import validate_csrf_token
@@ -1300,6 +1301,50 @@ def email_settings():
     return render_template("admin/email_settings.html", settings=settings)
 
 
+
+
+# ---------- Media helpers ----------
+def _static_media_path(file_path: str | None) -> Path | None:
+    if not file_path:
+        return None
+    normalized = file_path.lstrip("/")
+    if normalized.startswith("static/"):
+        normalized = normalized[len("static/"):]
+    return Path(current_app.static_folder) / normalized
+
+
+def _media_file_exists(media: MediaFile) -> bool:
+    path = _static_media_path(media.file_path)
+    return bool(path and path.exists())
+
+
+def _media_references(media: MediaFile) -> list[str]:
+    file_path = media.file_path
+    if not file_path:
+        return []
+
+    refs: list[str] = []
+
+    if BlogPost.query.filter_by(main_image=file_path).first():
+        refs.append("Aktuelles / Blog")
+    if SchoolDestination.query.filter_by(main_image=file_path).first():
+        refs.append("Schulziele")
+    if DestinationImage.query.filter_by(image_path=file_path).first():
+        refs.append("Schulziel-Galerie")
+    if FleetVehicle.query.filter_by(main_image=file_path).first():
+        refs.append("Fuhrpark-Hauptbild")
+    if VehicleImage.query.filter_by(image_path=file_path).first():
+        refs.append("Fuhrpark-Galerie")
+
+    return refs
+
+
+def _decorate_media_files(media_files: list[MediaFile]) -> list[MediaFile]:
+    for media in media_files:
+        media.file_exists = _media_file_exists(media)
+        media.references = _media_references(media)
+    return media_files
+
 # ---------- Media ----------
 @admin_bp.route("/media", methods=["GET", "POST"])
 @login_required
@@ -1326,4 +1371,61 @@ def media_list():
         return redirect(url_for("admin.media_list"))
 
     media_files = MediaFile.query.order_by(MediaFile.uploaded_at.desc()).all()
-    return render_template("admin/media_list.html", media_files=media_files)
+    media_files = _decorate_media_files(media_files)
+    missing_count = sum(1 for media in media_files if not media.file_exists)
+    return render_template("admin/media_list.html", media_files=media_files, missing_count=missing_count)
+
+@admin_bp.route("/media/<int:media_id>/delete", methods=["POST"])
+@login_required
+def media_delete(media_id: int):
+    if not require_csrf():
+        return redirect(url_for("admin.media_list"))
+
+    media = MediaFile.query.get_or_404(media_id)
+    file_path = media.file_path
+    absolute_path = _static_media_path(file_path)
+    exists = _media_file_exists(media)
+    references = _media_references(media)
+
+    db.session.delete(media)
+
+    removed_physical_file = False
+    if exists and absolute_path and not references:
+        try:
+            absolute_path.unlink()
+            removed_physical_file = True
+        except OSError:
+            removed_physical_file = False
+
+    db.session.commit()
+
+    if references:
+        flash("Archiv-Eintrag gelöscht. Die Bilddatei wurde nicht gelöscht, weil sie noch verwendet wird: " + ", ".join(references), "success")
+    elif removed_physical_file:
+        flash("Bild und Archiv-Eintrag gelöscht.", "success")
+    elif not exists:
+        flash("Defekten Archiv-Eintrag gelöscht. Die Bilddatei war nicht mehr vorhanden.", "success")
+    else:
+        flash("Archiv-Eintrag gelöscht. Die Datei konnte nicht automatisch entfernt werden.", "success")
+
+    return redirect(url_for("admin.media_list"))
+
+
+@admin_bp.route("/media/cleanup-missing", methods=["POST"])
+@login_required
+def media_cleanup_missing():
+    if not require_csrf():
+        return redirect(url_for("admin.media_list"))
+
+    media_files = MediaFile.query.order_by(MediaFile.uploaded_at.desc()).all()
+    removed = 0
+
+    for media in media_files:
+        if not _media_file_exists(media):
+            db.session.delete(media)
+            removed += 1
+
+    db.session.commit()
+    flash(f"{removed} defekte Medien-Einträge bereinigt.", "success")
+    return redirect(url_for("admin.media_list"))
+

@@ -57,7 +57,7 @@ def sitemap_xml():
         {"loc": "/anfrage", "priority": "0.95", "changefreq": "monthly"},
         {"loc": "/schulen", "priority": "0.9", "changefreq": "monthly"},
         {"loc": "/fuhrpark", "priority": "0.8", "changefreq": "monthly"},
-        {"loc": "/aktuelles-kundenstimmen", "priority": "0.7", "changefreq": "weekly"},
+        {"loc": "/aktuelles", "priority": "0.7", "changefreq": "weekly"},
         {"loc": "/kontakt", "priority": "0.8", "changefreq": "monthly"},
         {"loc": "/impressum", "priority": "0.3", "changefreq": "yearly"},
         {"loc": "/datenschutz", "priority": "0.3", "changefreq": "yearly"},
@@ -193,6 +193,7 @@ def fuhrpark():
 
 
 @public_bp.route("/aktuelles-kundenstimmen")
+@public_bp.route("/aktuelles")
 def aktuelles():
     selected_category = request.args.get("category", "all").strip()
 
