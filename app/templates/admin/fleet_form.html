@@ -1,1 +1,156 @@
-{% extends "admin/base_admin.html" %}{% block content %}<a href="{{ url_for('admin.fleet_list') }}" class="font-bold text-red-700">← Zurück</a><h1 class="mt-3 mb-8 text-4xl font-black">{% if item %}Fahrzeug bearbeiten{% else %}Neues Fahrzeug{% endif %}</h1><form method="post" enctype="multipart/form-data" class="rounded-[2rem] bg-white p-8 shadow-sm"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><div class="grid gap-6 lg:grid-cols-2"><div class="grid gap-5"><label class="text-sm font-bold">Name<input class="field mt-2" name="name" value="{{ item.name if item else '' }}" required></label><label class="text-sm font-bold">Slug<input class="field mt-2" name="slug" value="{{ item.slug if item else '' }}"></label><label class="text-sm font-bold">Model<input class="field mt-2" name="model" value="{{ item.model if item and item.model else '' }}"></label><div class="grid gap-5 sm:grid-cols-2"><label class="text-sm font-bold">Sitze<input class="field mt-2" type="number" name="seats" value="{{ item.seats if item else 53 }}"></label><label class="text-sm font-bold">Anzahl<input class="field mt-2" type="number" name="quantity" value="{{ item.quantity if item else 1 }}"></label></div><label class="text-sm font-bold">Kategorie<input class="field mt-2" name="category" value="{{ item.category if item else 'Reisebus' }}"></label><label class="text-sm font-bold">Beschreibung<textarea class="field mt-2 min-h-[180px]" name="description">{{ item.description if item and item.description else '' }}</textarea></label><label class="text-sm font-bold">Geeignet für<input class="field mt-2" name="suitable_for" value="{{ item.suitable_for if item and item.suitable_for else '' }}"></label></div><div class="grid content-start gap-5"><label class="text-sm font-bold">4★ / Klasse<input class="field mt-2" name="star_rating" value="{{ item.star_rating if item and item.star_rating else '4★' }}"></label><label class="text-sm font-bold">Bild<input class="field mt-2" type="file" name="main_image" accept="image/*"></label>{% if item and item.main_image %}<img src="{{ url_for('static', filename=item.main_image) }}" class="rounded-3xl">{% endif %}<label class="text-sm font-bold">Alt Text<input class="field mt-2" name="alt_text" value="{{ item.alt_text if item and item.alt_text else '' }}"></label><label class="text-sm font-bold">Sortierung<input class="field mt-2" type="number" name="sort_order" value="{{ item.sort_order if item else 100 }}"></label><label class="flex gap-3 font-bold"><input type="checkbox" name="is_active" {% if not item or item.is_active %}checked{% endif %}> Aktiv</label><div class="check-grid grid gap-2 sm:grid-cols-2">{% for f,label in [('ac','AC'),('wc','WC'),('usb','USB'),('power_220','220V'),('euro6','Euro 6'),('wifi','WLAN'),('tv','TV'),('dvd','DVD'),('monitors_2','2 Monitore'),('kitchen','Bordküche'),('coffee_machine','Kaffeemaschine'),('fridge','Kühlschrank'),('kettle','Wasserkocher'),('tables','Tische'),('leather_seats','Teilleder'),('folding_tables','Klapptische'),('adjustable_seats','Seitlich verstellbar'),('sleeping_seats','Schlafsitze')] %}<label><input type="checkbox" name="{{ f }}" {% if not item or item|attr(f) %}checked{% endif %}> {{ label }}</label>{% endfor %}</div></div></div><button class="mt-8 rounded-2xl bg-red-700 px-6 py-4 font-black text-white">Speichern</button></form>{% endblock %}
+{% extends "admin/base_admin.html" %}
+{% block title %}Fuhrpark – Admin{% endblock %}
+{% block content %}
+<div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+  <div>
+    <h1 class="text-4xl font-black">{% if item %}Fahrzeug bearbeiten{% else %}Neues Fahrzeug{% endif %}</h1>
+    <p class="mt-2 text-slate-600">Fahrzeugdaten, Ausstattung und Bildergalerie verwalten.</p>
+  </div>
+  <a href="{{ url_for('admin.fleet_list') }}" class="rounded-2xl bg-white px-5 py-3 font-bold shadow-sm">Zurück</a>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
+  <form method="post" enctype="multipart/form-data" class="rounded-[2rem] bg-white p-8 shadow-sm">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+    <h2 class="text-2xl font-black">Fahrzeugdaten</h2>
+
+    <div class="mt-6 grid gap-5 lg:grid-cols-2">
+      <label class="text-sm font-bold">Name
+        <input class="field mt-2" name="name" value="{{ item.name if item else '' }}" required>
+      </label>
+
+      <label class="text-sm font-bold">Slug
+        <input class="field mt-2" name="slug" value="{{ item.slug if item else '' }}">
+      </label>
+
+      <label class="text-sm font-bold">Model
+        <input class="field mt-2" name="model" value="{{ item.model if item and item.model else '' }}">
+      </label>
+
+      <label class="text-sm font-bold">Kategorie
+        <input class="field mt-2" name="category" value="{{ item.category if item else 'Reisebus' }}">
+      </label>
+
+      <label class="text-sm font-bold">Sitze
+        <input class="field mt-2" type="number" name="seats" value="{{ item.seats if item else 53 }}">
+      </label>
+
+      <label class="text-sm font-bold">Anzahl
+        <input class="field mt-2" type="number" name="quantity" value="{{ item.quantity if item else 1 }}">
+      </label>
+
+      <label class="text-sm font-bold">4★ / Klasse
+        <input class="field mt-2" name="star_rating" value="{{ item.star_rating if item and item.star_rating else '4★' }}">
+      </label>
+
+      <label class="text-sm font-bold">Sortierung
+        <input class="field mt-2" type="number" name="sort_order" value="{{ item.sort_order if item else 100 }}">
+      </label>
+    </div>
+
+    <label class="mt-5 block text-sm font-bold">Beschreibung
+      <textarea class="field mt-2 min-h-[160px]" name="description">{{ item.description if item and item.description else '' }}</textarea>
+    </label>
+
+    <label class="mt-5 block text-sm font-bold">Geeignet für
+      <input class="field mt-2" name="suitable_for" value="{{ item.suitable_for if item and item.suitable_for else '' }}">
+    </label>
+
+    <label class="mt-5 block text-sm font-bold">Alt Text / Fallback Icon
+      <input class="field mt-2" name="alt_text" value="{{ item.alt_text if item and item.alt_text else '' }}">
+    </label>
+
+    <section class="mt-6 rounded-[2rem] bg-slate-50 p-5">
+      <h3 class="text-xl font-black">Einzelnes Hauptbild</h3>
+      <p class="mt-2 text-sm leading-6 text-slate-600">
+        Das bisherige Einzelbild bleibt erhalten. Für mehrere Bilder nutzen Sie die Galerie rechts.
+      </p>
+      <label class="mt-4 block text-sm font-bold">Hauptbild ersetzen
+        <input class="field mt-2" type="file" name="main_image" accept="image/*">
+      </label>
+      {% if item and item.main_image %}
+        <img src="{{ url_for('static', filename=item.main_image) }}" class="mt-4 rounded-3xl">
+      {% endif %}
+    </section>
+
+    <label class="mt-5 flex gap-3 font-bold">
+      <input type="checkbox" name="is_active" {% if not item or item.is_active %}checked{% endif %}>
+      Aktiv
+    </label>
+
+    <div class="mt-5 grid gap-2 sm:grid-cols-2">
+      {% for f,label in [('ac','AC'),('wc','WC'),('usb','USB'),('power_220','220V'),('euro6','Euro 6'),('wifi','WLAN'),('tv','TV'),('dvd','DVD'),('monitors_2','2 Monitore'),('kitchen','Bordküche'),('coffee_machine','Kaffeemaschine'),('fridge','Kühlschrank'),('kettle','Wasserkocher'),('tables','Tische'),('leather_seats','Teilleder'),('folding_tables','Klapptische'),('adjustable_seats','Seitlich verstellbar'),('sleeping_seats','Schlafsitze')] %}
+        <label class="rounded-xl bg-slate-50 px-3 py-2 font-bold">
+          <input type="checkbox" name="{{ f }}" {% if not item or item|attr(f) %}checked{% endif %}> {{ label }}
+        </label>
+      {% endfor %}
+    </div>
+
+    <button class="mt-8 rounded-2xl bg-red-700 px-6 py-4 font-black text-white">Speichern</button>
+  </form>
+
+  <aside class="space-y-6">
+    {% if item %}
+      <section class="rounded-[2rem] bg-white p-6 shadow-sm">
+        <h2 class="text-2xl font-black">Galerie</h2>
+        <p class="mt-2 text-sm leading-6 text-slate-600">
+          Mehrere Fotos pro Bus. Die Reihenfolge bestimmt auch die Darstellung im Detailfenster. Das erste Bild kann zugleich als Hauptbild gesetzt werden.
+        </p>
+
+        <form method="post" enctype="multipart/form-data" action="{{ url_for('admin.fleet_gallery_upload', item_id=item.id) }}" class="mt-5 rounded-3xl bg-slate-50 p-4">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+          <label class="block text-sm font-bold">Bilder zur Galerie hinzufügen
+            <input class="field mt-2" type="file" name="gallery_images" accept="image/*" multiple>
+          </label>
+          <button class="mt-3 rounded-2xl bg-slate-900 px-5 py-3 font-black text-white">Hochladen</button>
+        </form>
+
+        {% if item.images %}
+          <form method="post" action="{{ url_for('admin.fleet_gallery_update', item_id=item.id) }}" class="mt-6">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+            <div class="grid gap-4">
+              {% for image in item.images %}
+                <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                  <img src="{{ url_for('static', filename=image.image_path) }}" alt="{{ image.alt_text or item.name }}" class="h-44 w-full rounded-2xl object-cover">
+
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    {% if item.main_image == image.image_path %}
+                      <span class="rounded-full bg-red-700 px-3 py-2 text-xs font-black text-white">Hauptbild</span>
+                    {% endif %}
+                    <button formaction="{{ url_for('admin.fleet_gallery_make_first', image_id=image.id) }}" formmethod="post" class="rounded-xl bg-white px-3 py-2 text-sm font-bold shadow-sm">Als erstes Bild</button>
+                    <button formaction="{{ url_for('admin.fleet_gallery_delete', image_id=image.id) }}" formmethod="post" class="rounded-xl bg-red-50 px-3 py-2 text-sm font-bold text-red-700" onclick="return confirm('Bild wirklich löschen?')">Löschen</button>
+                  </div>
+
+                  <div class="mt-3 grid gap-3 sm:grid-cols-[100px_1fr]">
+                    <label class="text-xs font-black uppercase tracking-[.14em] text-slate-500">Sortierung
+                      <input class="field mt-1" type="number" name="image_{{ image.id }}_sort_order" value="{{ image.sort_order }}">
+                    </label>
+                    <label class="text-xs font-black uppercase tracking-[.14em] text-slate-500">Alt Text
+                      <input class="field mt-1" name="image_{{ image.id }}_alt_text" value="{{ image.alt_text or '' }}" placeholder="{{ item.name }}">
+                    </label>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <button class="mt-4 rounded-2xl bg-slate-900 px-5 py-3 font-black text-white">Galerie speichern</button>
+          </form>
+        {% else %}
+          <div class="mt-5 rounded-3xl bg-slate-50 p-5 text-sm font-bold text-slate-600">
+            Noch keine Galerie-Bilder vorhanden.
+          </div>
+        {% endif %}
+      </section>
+    {% else %}
+      <section class="rounded-[2rem] bg-white p-6 shadow-sm">
+        <h2 class="text-2xl font-black">Galerie</h2>
+        <p class="mt-2 text-sm leading-6 text-slate-600">
+          Galerie-Bilder können nach dem ersten Speichern des Fahrzeugs hochgeladen werden.
+        </p>
+      </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

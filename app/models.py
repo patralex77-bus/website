@@ -237,7 +237,7 @@ class VehicleImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     vehicle_id = db.Column(db.Integer, db.ForeignKey("fleet_vehicles.id"), nullable=False)
     image_path = db.Column(db.String(500), nullable=False)
-    alt_text = db.Column(db.String(255), nullable=True)
+    alt_text = db.Column(db.String(500), nullable=True)
     sort_order = db.Column(db.Integer, default=100, nullable=False)
     vehicle = db.relationship("FleetVehicle", back_populates="images")
 

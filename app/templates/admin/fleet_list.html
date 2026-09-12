@@ -1,1 +1,50 @@
-{% extends "admin/base_admin.html" %}{% block content %}<div class="mb-8 flex justify-between items-end"><h1 class="text-4xl font-black">Fuhrpark</h1><a href="{{ url_for('admin.fleet_new') }}" class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white">Neues Fahrzeug</a></div><div class="grid gap-5">{% for item in items %}<div class="rounded-[2rem] bg-white p-6 shadow-sm"><div class="flex justify-between gap-4"><div><h2 class="text-2xl font-black">{{ item.name }}</h2><div class="text-sm text-slate-500">{{ item.category }} · {{ item.seats }} Sitze · {{ item.quantity }} Fahrzeug(e)</div><p class="mt-2 text-slate-600">{{ item.description }}</p></div><div class="flex gap-2"><a href="{{ url_for('admin.fleet_edit', item_id=item.id) }}" class="rounded-xl bg-slate-900 px-4 py-2 font-bold text-white">Edit</a><form method="post" action="{{ url_for('admin.fleet_delete', item_id=item.id) }}"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><button class="rounded-xl bg-red-50 px-4 py-2 font-bold text-red-700">Delete</button></form></div></div></div>{% else %}<div class="rounded-[2rem] bg-white p-8">Keine Fahrzeuge.</div>{% endfor %}</div>{% endblock %}
+{% extends "admin/base_admin.html" %}
+{% block title %}Fuhrpark – Admin{% endblock %}
+{% block content %}
+<div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+  <div>
+    <h1 class="text-4xl font-black">Fuhrpark</h1>
+    <p class="mt-2 text-slate-600">Fahrzeugtypen, Hauptbilder und Galerien verwalten.</p>
+  </div>
+  <a href="{{ url_for('admin.fleet_new') }}" class="rounded-2xl bg-red-700 px-6 py-4 font-black text-white">Neues Fahrzeug</a>
+</div>
+
+<div class="grid gap-5">
+  {% for item in items %}
+    <div class="rounded-[2rem] bg-white p-6 shadow-sm">
+      <div class="grid gap-5 lg:grid-cols-[220px_1fr_auto] lg:items-start">
+        <div>
+          {% if item.main_image %}
+            <img src="{{ url_for('static', filename=item.main_image) }}" alt="{{ item.alt_text or item.name }}" class="h-36 w-full rounded-3xl object-cover">
+          {% elif item.images %}
+            <img src="{{ url_for('static', filename=item.images[0].image_path) }}" alt="{{ item.images[0].alt_text or item.name }}" class="h-36 w-full rounded-3xl object-cover">
+          {% else %}
+            <div class="flex h-36 w-full items-center justify-center rounded-3xl bg-slate-100 text-5xl">{{ item.alt_text or '🚌' }}</div>
+          {% endif %}
+        </div>
+
+        <div>
+          <h2 class="text-2xl font-black">{{ item.name }}</h2>
+          <div class="mt-1 text-sm text-slate-500">
+            {{ item.category }} · {{ item.seats }} Sitze · {{ item.quantity }} Fahrzeug(e) · {% if item.is_active %}aktiv{% else %}inaktiv{% endif %}
+          </div>
+          <div class="mt-2 text-sm font-bold text-slate-600">
+            Galerie: {{ item.images|length if item.images else 0 }} Bild(er)
+          </div>
+          <p class="mt-3 text-slate-600">{{ item.description }}</p>
+        </div>
+
+        <div class="flex gap-2 lg:flex-col">
+          <a href="{{ url_for('admin.fleet_edit', item_id=item.id) }}" class="rounded-xl bg-slate-900 px-4 py-2 text-center font-bold text-white">Edit</a>
+          <form method="post" action="{{ url_for('admin.fleet_delete', item_id=item.id) }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button class="w-full rounded-xl bg-red-50 px-4 py-2 font-bold text-red-700">Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="rounded-[2rem] bg-white p-8">Keine Fahrzeuge.</div>
+  {% endfor %}
+</div>
+{% endblock %}

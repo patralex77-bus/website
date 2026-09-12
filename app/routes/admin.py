@@ -12,7 +12,7 @@ from werkzeug.security import check_password_hash
 from ..extensions import db
 from ..models import (
     AdminUser, BlogPost, CustomerReview, ContactRequest, MediaFile, SchoolDestination, SchoolDestinationPricing,
-    FleetVehicle, BusRentalRequest, PricingProfile, PricingCalculation, utcnow
+    FleetVehicle, VehicleImage, BusRentalRequest, PricingProfile, PricingCalculation, utcnow
 )
 from ..utils.csrf import validate_csrf_token
 from ..utils.slug import slugify
@@ -526,6 +526,24 @@ def school_destination_delete(item_id: int):
     return redirect(url_for("admin.school_destinations_list"))
 
 
+
+
+# ---------- Fleet gallery helpers ----------
+def fleet_image_url(image_path: str | None) -> str:
+    return image_path or ""
+
+
+def normalize_vehicle_gallery_order(vehicle: FleetVehicle):
+    images = sorted(vehicle.images or [], key=lambda img: (img.sort_order or 100, img.id or 0))
+    for index, image in enumerate(images):
+        image.sort_order = (index + 1) * 10
+
+
+def first_vehicle_gallery_image(vehicle: FleetVehicle):
+    images = sorted(vehicle.images or [], key=lambda img: (img.sort_order or 100, img.id or 0))
+    return images[0] if images else None
+
+
 # ---------- Fleet ----------
 @admin_bp.route("/fleet")
 @login_required
@@ -613,6 +631,123 @@ def fleet_delete(item_id: int):
     db.session.commit()
     flash("Fahrzeug gelöscht.", "success")
     return redirect(url_for("admin.fleet_list"))
+
+
+
+
+@admin_bp.route("/fleet/<int:item_id>/gallery/upload", methods=["POST"])
+@login_required
+def fleet_gallery_upload(item_id: int):
+    if not require_csrf():
+        return redirect(url_for("admin.fleet_list"))
+
+    vehicle = FleetVehicle.query.get_or_404(item_id)
+    uploads = request.files.getlist("gallery_images")
+    created = 0
+
+    for upload in uploads:
+        try:
+            image_path, original_name = save_uploaded_image(upload)
+        except ValueError as exc:
+            flash(str(exc), "error")
+            continue
+
+        if not image_path:
+            continue
+
+        max_sort = db.session.query(db.func.max(VehicleImage.sort_order)).filter_by(vehicle_id=vehicle.id).scalar() or 0
+        image = VehicleImage(
+            vehicle=vehicle,
+            image_path=image_path,
+            alt_text=vehicle.alt_text or vehicle.name,
+            sort_order=max_sort + 10,
+        )
+        db.session.add(image)
+        db.session.add(MediaFile(
+            file_name=image_path.split("/")[-1],
+            original_name=original_name or image_path,
+            file_path=image_path,
+            alt_text=vehicle.alt_text or vehicle.name,
+        ))
+        created += 1
+
+    if created and not vehicle.main_image:
+        db.session.flush()
+        first_image = first_vehicle_gallery_image(vehicle)
+        if first_image:
+            vehicle.main_image = first_image.image_path
+
+    db.session.commit()
+
+    if created:
+        flash(f"{created} Bild(er) zur Galerie hinzugefügt.", "success")
+    else:
+        flash("Keine gültigen Bilder hochgeladen.", "error")
+
+    return redirect(url_for("admin.fleet_edit", item_id=vehicle.id))
+
+
+@admin_bp.route("/fleet/gallery/<int:image_id>/first", methods=["POST"])
+@login_required
+def fleet_gallery_make_first(image_id: int):
+    if not require_csrf():
+        return redirect(url_for("admin.fleet_list"))
+
+    image = VehicleImage.query.get_or_404(image_id)
+    vehicle = image.vehicle
+
+    image.sort_order = 0
+    vehicle.main_image = image.image_path
+    normalize_vehicle_gallery_order(vehicle)
+
+    db.session.commit()
+    flash("Galerie-Titelbild gespeichert.", "success")
+    return redirect(url_for("admin.fleet_edit", item_id=vehicle.id))
+
+
+@admin_bp.route("/fleet/gallery/<int:image_id>/delete", methods=["POST"])
+@login_required
+def fleet_gallery_delete(image_id: int):
+    if not require_csrf():
+        return redirect(url_for("admin.fleet_list"))
+
+    image = VehicleImage.query.get_or_404(image_id)
+    vehicle = image.vehicle
+    deleted_main = vehicle.main_image == image.image_path
+
+    db.session.delete(image)
+    db.session.flush()
+
+    if deleted_main:
+        first_image = first_vehicle_gallery_image(vehicle)
+        vehicle.main_image = first_image.image_path if first_image else None
+
+    normalize_vehicle_gallery_order(vehicle)
+    db.session.commit()
+
+    flash("Bild aus der Galerie gelöscht.", "success")
+    return redirect(url_for("admin.fleet_edit", item_id=vehicle.id))
+
+
+@admin_bp.route("/fleet/<int:item_id>/gallery/update", methods=["POST"])
+@login_required
+def fleet_gallery_update(item_id: int):
+    if not require_csrf():
+        return redirect(url_for("admin.fleet_list"))
+
+    vehicle = FleetVehicle.query.get_or_404(item_id)
+
+    for image in vehicle.images:
+        prefix = f"image_{image.id}_"
+        image.alt_text = request.form.get(prefix + "alt_text", "").strip() or vehicle.alt_text or vehicle.name
+        image.sort_order = to_int(request.form.get(prefix + "sort_order"), image.sort_order or 100)
+
+    normalize_vehicle_gallery_order(vehicle)
+    db.session.commit()
+
+    flash("Galerie gespeichert.", "success")
+    return redirect(url_for("admin.fleet_edit", item_id=vehicle.id))
+
 
 
 # ---------- Bus Rental Requests ----------
