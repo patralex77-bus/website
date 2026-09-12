@@ -119,37 +119,104 @@
           <div class="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
             <div>
               <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Karte</p>
-              <h2 class="mt-2 text-2xl font-black">Orientierung nach Zonen</h2>
+              <h2 class="mt-2 text-2xl font-black">Ihre Ziele in Wien, Niederösterreich &amp; Umgebung</h2>
             </div>
-            <div class="text-sm font-bold text-slate-500">Wien + Umgebung</div>
+            <div class="text-sm font-bold text-slate-500">Zonen, Entfernungen &amp; schnelle Orientierung</div>
           </div>
 
           <div class="overflow-hidden rounded-[1.5rem] bg-slate-100">
-            <svg viewBox="0 0 980 620" class="h-auto w-full">
-              <rect width="980" height="620" fill="#f8fafc"/>
-              <circle cx="520" cy="310" r="75" fill="none" stroke="#ef4444" stroke-dasharray="7 7" stroke-width="2"/>
-              <circle cx="520" cy="310" r="150" fill="none" stroke="#f59e0b" stroke-dasharray="7 7" stroke-width="2"/>
-              <circle cx="520" cy="310" r="230" fill="none" stroke="#10b981" stroke-dasharray="7 7" stroke-width="2"/>
-              <circle cx="520" cy="310" r="320" fill="none" stroke="#6366f1" stroke-dasharray="7 7" stroke-width="2"/>
-              <circle cx="520" cy="310" r="13" fill="#111827" stroke="white" stroke-width="3"/>
-              <text x="540" y="314" font-size="13" fill="#111827" font-weight="900">Wien</text>
+            <svg viewBox="0 0 980 680" class="h-auto w-full">
+              <defs>
+                <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#f8fafc"/>
+                  <stop offset="100%" stop-color="#eef2ff"/>
+                </linearGradient>
+                <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.12"/>
+                </filter>
+              </defs>
+
+              <rect width="980" height="680" fill="url(#bgGrad)"/>
+
+              <!-- Stylized regional map backdrop -->
+              <path d="M165 112
+                       C240 82, 335 74, 405 96
+                       C474 77, 591 87, 673 125
+                       C756 164, 810 228, 828 304
+                       C844 374, 830 448, 781 514
+                       C731 580, 649 617, 557 627
+                       C483 635, 404 620, 341 589
+                       C293 565, 253 528, 217 491
+                       C172 443, 142 390, 136 327
+                       C128 247, 142 169, 165 112 Z"
+                    fill="#dbeafe" stroke="#94a3b8" stroke-width="2"/>
+
+              <path d="M686 228
+                       C750 245, 798 279, 836 336
+                       C871 392, 882 454, 868 520
+                       C828 542, 780 563, 739 572
+                       C737 531, 724 486, 703 447
+                       C679 403, 648 369, 611 338
+                       C636 291, 653 260, 686 228 Z"
+                    fill="#fee2e2" stroke="#cbd5e1" stroke-width="2" opacity="0.82"/>
+
+              <path d="M564 475
+                       C615 502, 653 545, 677 603
+                       C620 631, 555 643, 488 638
+                       C496 581, 521 530, 564 475 Z"
+                    fill="#dcfce7" stroke="#cbd5e1" stroke-width="2" opacity="0.88"/>
+
+              <path d="M175 286
+                       C244 260, 321 255, 393 272
+                       C457 286, 523 319, 583 367"
+                    fill="none" stroke="#60a5fa" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+
+              <path d="M154 230
+                       C216 222, 291 208, 354 183
+                       C409 162, 462 142, 530 136
+                       C600 130, 665 145, 732 182"
+                    fill="none" stroke="#cbd5e1" stroke-width="3" stroke-dasharray="7 8"/>
+
+              <!-- Radius rings -->
+              <circle cx="520" cy="330" r="78" fill="none" stroke="#ef4444" stroke-dasharray="7 7" stroke-width="2.5"/>
+              <circle cx="520" cy="330" r="152" fill="none" stroke="#f59e0b" stroke-dasharray="7 7" stroke-width="2.5"/>
+              <circle cx="520" cy="330" r="230" fill="none" stroke="#10b981" stroke-dasharray="7 7" stroke-width="2.5"/>
+              <circle cx="520" cy="330" r="314" fill="none" stroke="#6366f1" stroke-dasharray="7 7" stroke-width="2.5"/>
+
+              <!-- Regional labels -->
+              <text x="435" y="124" font-size="24" fill="#1e293b" font-weight="900" opacity="0.8">Niederösterreich</text>
+              <text x="744" y="394" font-size="16" fill="#7f1d1d" font-weight="800" opacity="0.75">Burgenland</text>
+              <text x="586" y="610" font-size="16" fill="#166534" font-weight="800" opacity="0.78">Steiermark</text>
+              <text x="213" y="260" font-size="14" fill="#1d4ed8" font-weight="800" opacity="0.72">Donau</text>
+
+              <!-- Vienna center -->
+              <circle cx="520" cy="330" r="14" fill="#111827" stroke="white" stroke-width="3.5" filter="url(#softShadow)"/>
+              <text x="542" y="335" font-size="14" fill="#111827" font-weight="900">Wien</text>
 
               {% for d in destinations %}
                 {% set zone_color = '#ef4444' if d.zone == 'A' else '#f59e0b' if d.zone == 'B' else '#10b981' if d.zone == 'C' else '#6366f1' %}
                 {% set cx = 520 + (((d.longitude or 16.37) - 16.37) * 170) %}
-                {% set cy = 310 - (((d.latitude or 48.21) - 48.21) * 230) %}
+                {% set cy = 330 - (((d.latitude or 48.21) - 48.21) * 230) %}
                 <g class="map-marker cursor-pointer" data-dest="{{ d.slug }}" data-tags="{{ (d.tags or '').replace(',', ' ') }}">
-                  <circle cx="{{ '%.1f'|format(cx) }}" cy="{{ '%.1f'|format(cy) }}" r="12" fill="{{ zone_color }}" stroke="white" stroke-width="3"/>
+                  <circle cx="{{ '%.1f'|format(cx) }}" cy="{{ '%.1f'|format(cy) }}" r="13" fill="{{ zone_color }}" stroke="white" stroke-width="3" filter="url(#softShadow)"/>
                   <text x="{{ '%.1f'|format(cx) }}" y="{{ '%.1f'|format(cy + 4) }}" text-anchor="middle" font-size="10" font-weight="900" fill="white">{{ loop.index }}</text>
                   <title>{{ loop.index }}. {{ d.title }} – Zone {{ d.zone }}</title>
                 </g>
               {% endfor %}
 
-              <rect x="36" y="38" width="255" height="146" rx="16" fill="white" stroke="#cbd5e1"/>
-              <circle cx="62" cy="66" r="7" fill="#ef4444"/><text x="80" y="70" font-size="14" fill="#111827" font-weight="700">Zone A – kurze Fahrt</text>
-              <circle cx="62" cy="93" r="7" fill="#f59e0b"/><text x="80" y="97" font-size="14" fill="#111827" font-weight="700">Zone B – klassische Tagesfahrt</text>
-              <circle cx="62" cy="120" r="7" fill="#10b981"/><text x="80" y="124" font-size="14" fill="#111827" font-weight="700">Zone C – längere Fahrt</text>
-              <circle cx="62" cy="147" r="7" fill="#6366f1"/><text x="80" y="151" font-size="14" fill="#111827" font-weight="700">Zone D – weite Ziele</text>
+              <!-- Legend -->
+              <rect x="36" y="34" width="290" height="176" rx="18" fill="white" stroke="#cbd5e1" filter="url(#softShadow)"/>
+              <text x="58" y="62" font-size="16" fill="#111827" font-weight="900">Zonenübersicht</text>
+              <circle cx="62" cy="90" r="7" fill="#ef4444"/><text x="80" y="95" font-size="14" fill="#111827" font-weight="700">Zone A – kurze Fahrt</text>
+              <circle cx="62" cy="118" r="7" fill="#f59e0b"/><text x="80" y="123" font-size="14" fill="#111827" font-weight="700">Zone B – klassische Tagesfahrt</text>
+              <circle cx="62" cy="146" r="7" fill="#10b981"/><text x="80" y="151" font-size="14" fill="#111827" font-weight="700">Zone C – längere Fahrt</text>
+              <circle cx="62" cy="174" r="7" fill="#6366f1"/><text x="80" y="179" font-size="14" fill="#111827" font-weight="700">Zone D – weite Ziele</text>
+
+              <rect x="666" y="34" width="274" height="112" rx="18" fill="white" stroke="#cbd5e1" filter="url(#softShadow)"/>
+              <text x="688" y="62" font-size="16" fill="#111827" font-weight="900">So lesen Sie die Karte</text>
+              <text x="688" y="90" font-size="13" fill="#475569">• Wien ist der Ausgangspunkt aller Schulfahrten</text>
+              <text x="688" y="110" font-size="13" fill="#475569">• Die farbigen Ringe zeigen die Zonen A–D</text>
+              <text x="688" y="130" font-size="13" fill="#475569">• Nummern öffnen direkt das passende Ziel</text>
             </svg>
           </div>
         </div>
@@ -193,7 +260,7 @@
               <h3 class="mt-2 text-2xl font-black">{{ zone.distance }}</h3>
               <p class="mt-2 text-sm leading-6 text-slate-300">{{ zone.text }}</p>
               <div class="mt-4 rounded-2xl bg-white/10 p-4 text-sm font-bold text-slate-200">
-                Richtpreise je Ziel nach aktiven Preisprofilen im Detailfenster.
+                Richtpreise je Ziel im Detailfenster.
               </div>
             </div>
 
@@ -253,7 +320,7 @@
       </div>
       <p id="modalDesc" class="mt-5 leading-8 text-slate-600"></p>
       <div class="mt-6 rounded-3xl bg-slate-900 p-5 text-white">
-        <div class="text-sm font-black uppercase tracking-[.18em] text-red-300">Richtpreise nach Preisprofil</div>
+        <div class="text-sm font-black uppercase tracking-[.18em] text-red-300">Richtpreise</div>
         <div id="modalProfilePrices" class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div class="rounded-2xl bg-white/10 p-4">
             <div class="text-xs font-black uppercase tracking-[.16em] text-slate-300">Preis</div>
