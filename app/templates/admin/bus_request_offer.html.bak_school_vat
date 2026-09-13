@@ -64,13 +64,8 @@
       {% if calculation %}
         <div class="rounded-3xl bg-slate-900 p-6 text-white">
           <div class="text-sm font-black uppercase tracking-[.18em] text-red-300">Preis</div>
-          <div class="mt-3 text-4xl font-black">{{ offer.price_gross }} €</div>
-          {% if offer.is_school_price %}
-            <div class="mt-1 text-sm text-slate-300">Endpreis lt. Schulpreis-Kalkulation · inkl. gesetzlicher USt.</div>
-            <div class="mt-1 text-sm text-slate-300">Nettoanteil {{ offer.price_net }} € · enthaltene USt. {{ offer.vat_amount }} €</div>
-          {% else %}
-            <div class="mt-1 text-sm text-slate-300">Brutto · Netto {{ offer.price_net }} € · USt {{ offer.vat_amount }} €</div>
-          {% endif %}
+          <div class="mt-3 text-4xl font-black">{{ calculation.gross_total }} €</div>
+          <div class="mt-1 text-sm text-slate-300">Brutto · Netto {{ calculation.net_total }} € · USt {{ calculation.vat_amount }} €</div>
           <div class="mt-3 text-sm text-slate-300">{{ calculation.profile.name }} · {{ calculation.total_km }} km · {{ calculation.operating_hours }} h</div>
         </div>
       {% endif %}

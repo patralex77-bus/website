@@ -969,12 +969,13 @@ def build_offer_context(item: BusRentalRequest, calculation: PricingCalculation 
 
     if calculation and is_school_price:
         price_lines = (
-            f"{offer_money(price_gross)} inkl. gesetzlicher USt.\\n"
+            f"{offer_money(price_gross)} inkl. gesetzlicher USt."
             f"Enthaltene USt. ({vat_percent}%): {offer_money(vat_amount)}; Nettoanteil: {offer_money(price_net)}."
         )
     elif calculation:
         price_lines = (
-            f"{offer_money(price_gross)} brutto\\n"
+            f"{offer_money(price_gross)} brutto
+"
             f"Netto {offer_money(price_net)} zzgl. {vat_percent}% USt. ({offer_money(vat_amount)})"
         )
     else:
@@ -1086,7 +1087,9 @@ def bus_request_calculate(item_id: int):
         final_net_total, final_vat_amount, final_gross_total = included_vat_breakdown(final_customer_total, profile.vat_percent or 10)
 
         marker_note = SCHOOL_INCLUDED_VAT_MARKER + " Keine zusätzliche USt. auf Schulpreise aufschlagen."
-        manual_note = (manual_note + "\n\n" + marker_note) if manual_note else marker_note
+        manual_note = (manual_note + "
+
+" + marker_note) if manual_note else marker_note
     else:
         # Standard bus rental calculations: profile rates are treated as net values,
         # VAT is added on top.

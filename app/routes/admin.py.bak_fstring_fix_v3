@@ -980,7 +980,7 @@ def build_offer_context(item: BusRentalRequest, calculation: PricingCalculation 
     else:
         price_lines = "Preis vorbehaltlich finaler Kalkulation."
 
-    plain_text = f"""Sehr geehrte Damen und Herren,
+    plain_text = f\"\"\"Sehr geehrte Damen und Herren,
 
 vielen Dank für Ihre Anfrage. Gerne unterbreiten wir Ihnen folgendes Angebot:
 
@@ -1016,7 +1016,7 @@ Austria Express
 AUSTRIAN INCENTIVE SERVICE GmbH
 office@austria-express.eu
 +43 676 849 113 200
-"""
+\"\"\"
 
     mailto_body = quote(plain_text)
     mailto_subject = quote(subject)

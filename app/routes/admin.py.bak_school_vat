@@ -787,8 +787,7 @@ def bus_request_detail(item_id: int):
         return redirect(url_for("admin.bus_request_detail", item_id=item.id))
 
     profiles = PricingProfile.query.filter_by(is_active=True).order_by(PricingProfile.name.asc()).all()
-    attach_calculation_display_values(item)
-    return render_template("admin/bus_request_detail.html", item=item, profiles=profiles, school_pricing_mode=is_school_request(item))
+    return render_template("admin/bus_request_detail.html", item=item, profiles=profiles)
 
 
 @admin_bp.post("/bus-rental-requests/<int:item_id>/status")
@@ -863,95 +862,11 @@ def offer_date(value):
     return str(value)
 
 
-
-SCHOOL_INCLUDED_VAT_MARKER = "[Schulpreis: Endpreis inkl. USt.]"
-
-
-def is_school_request(item) -> bool:
-    haystack = " ".join([
-        str(getattr(item, "trip_type", "") or ""),
-        str(getattr(item, "customer_type", "") or ""),
-        str(getattr(item, "organisation", "") or ""),
-        str(getattr(item, "route_description", "") or ""),
-    ]).lower()
-    return "schul" in haystack
-
-
-def money_decimal(value, fallback="0.00") -> Decimal:
-    try:
-        return Decimal(str(value if value is not None else fallback)).quantize(Decimal("0.01"))
-    except Exception:
-        return Decimal(str(fallback)).quantize(Decimal("0.01"))
-
-
-def included_vat_breakdown(gross_total, vat_percent):
-    gross_total = money_decimal(gross_total)
-    vat_percent = Decimal(str(vat_percent or 0))
-
-    if vat_percent <= 0:
-        return gross_total, Decimal("0.00"), gross_total
-
-    divisor = Decimal("1.00") + (vat_percent / Decimal("100"))
-    net_total = (gross_total / divisor).quantize(Decimal("0.01"))
-    vat_amount = (gross_total - net_total).quantize(Decimal("0.01"))
-    return net_total, vat_amount, gross_total
-
-
-def calculation_display_values(item, calculation):
-    if not calculation:
-        return None
-
-    vat_percent = calculation.profile.vat_percent if calculation.profile else 10
-
-    if is_school_request(item):
-        # Legacy school calculations were saved as:
-        # net_total = customer-facing final price, gross_total = net_total + VAT.
-        # New calculations carry SCHOOL_INCLUDED_VAT_MARKER and are saved as:
-        # gross_total = customer-facing final price, net_total/VAT extracted from gross.
-        note = calculation.manual_note or ""
-        if SCHOOL_INCLUDED_VAT_MARKER in note:
-            gross_basis = calculation.gross_total
-        else:
-            gross_basis = calculation.manual_override_net or calculation.net_total or calculation.gross_total
-
-        net_total, vat_amount, gross_total = included_vat_breakdown(gross_basis, vat_percent)
-        return {
-            "gross_total": gross_total,
-            "net_total": net_total,
-            "vat_amount": vat_amount,
-            "vat_percent": vat_percent,
-            "is_school_price": True,
-        }
-
-    return {
-        "gross_total": money_decimal(calculation.gross_total),
-        "net_total": money_decimal(calculation.net_total),
-        "vat_amount": money_decimal(calculation.vat_amount),
-        "vat_percent": vat_percent,
-        "is_school_price": False,
-    }
-
-
-def attach_calculation_display_values(item):
-    for calculation in list(getattr(item, "calculations", []) or []):
-        values = calculation_display_values(item, calculation)
-        if not values:
-            continue
-        calculation.display_gross_total = values["gross_total"]
-        calculation.display_net_total = values["net_total"]
-        calculation.display_vat_amount = values["vat_amount"]
-        calculation.display_vat_percent = values["vat_percent"]
-        calculation.display_is_school_price = values["is_school_price"]
-
-
 def build_offer_context(item: BusRentalRequest, calculation: PricingCalculation | None):
-    display_values = calculation_display_values(item, calculation) if calculation else None
-
-    price_gross = display_values["gross_total"] if display_values else None
-    price_net = display_values["net_total"] if display_values else None
-    vat_amount = display_values["vat_amount"] if display_values else None
-    vat_percent = display_values["vat_percent"] if display_values else (calculation.profile.vat_percent if calculation and calculation.profile else 10)
-    is_school_price = bool(display_values and display_values.get("is_school_price"))
+    price_gross = calculation.gross_total if calculation else None
+    price_net = calculation.net_total if calculation else None
+    vat_amount = calculation.vat_amount if calculation else None
+    vat_percent = calculation.profile.vat_percent if calculation and calculation.profile else 10
 
     subject = f"Angebot Austria Express – {item.departure_place} → {item.destination}"
 
@@ -966,19 +881,6 @@ def build_offer_context(item: BusRentalRequest, calculation: PricingCalculation 
 
     pax_line = f"{item.passengers} Personen" if item.passengers else "laut Anfrage"
     bus_line = item.bus_size or "passender Reisebus"
-
-    if calculation and is_school_price:
-        price_lines = (
-            f"{offer_money(price_gross)} inkl. gesetzlicher USt.\\n"
-            f"Enthaltene USt. ({vat_percent}%): {offer_money(vat_amount)}; Nettoanteil: {offer_money(price_net)}."
-        )
-    elif calculation:
-        price_lines = (
-            f"{offer_money(price_gross)} brutto\\n"
-            f"Netto {offer_money(price_net)} zzgl. {vat_percent}% USt. ({offer_money(vat_amount)})"
-        )
-    else:
-        price_lines = "Preis vorbehaltlich finaler Kalkulation."
 
     plain_text = f"""Sehr geehrte Damen und Herren,
 
@@ -1003,7 +905,8 @@ Leistung:
 Bereitstellung eines passenden Reisebusses inkl. Fahrer für die angefragte Fahrt laut Programm und Angaben in Ihrer Anfrage.
 
 Preis:
-{price_lines}
+{offer_money(price_gross)} brutto
+{f"Netto {offer_money(price_net)} zzgl. {vat_percent}% USt. ({offer_money(vat_amount)})" if calculation else "Preis vorbehaltlich finaler Kalkulation."}
 
 Hinweise:
 - Angebot freibleibend bis zur schriftlichen Bestätigung.
@@ -1032,7 +935,6 @@ office@austria-express.eu
         "price_net": price_net,
         "vat_amount": vat_amount,
         "vat_percent": vat_percent,
-        "is_school_price": is_school_price,
         "plain_text": plain_text,
         "mailto_subject": mailto_subject,
         "mailto_body": mailto_body,
@@ -1077,22 +979,12 @@ def bus_request_calculate(item_id: int):
         else None
     )
 
-    manual_note = request.form.get("manual_note", "").strip() or None
-
-    # For school inquiries the public frontend prices are already customer-facing
-    # final prices incl. statutory VAT. Therefore the admin must not add VAT again.
-    if is_school_request(item):
-        final_customer_total = manual_override_net if manual_override_net is not None else result.net_total
-        final_net_total, final_vat_amount, final_gross_total = included_vat_breakdown(final_customer_total, profile.vat_percent or 10)
-
-        marker_note = SCHOOL_INCLUDED_VAT_MARKER + " Keine zusätzliche USt. auf Schulpreise aufschlagen."
-        manual_note = (manual_note + "\n\n" + marker_note) if manual_note else marker_note
-    else:
-        # Standard bus rental calculations: profile rates are treated as net values,
-        # VAT is added on top.
-        final_net_total = manual_override_net if manual_override_net is not None else result.net_total
-        final_vat_amount = Decimal(str(final_net_total * Decimal(str(profile.vat_percent or 0)) / Decimal("100"))).quantize(Decimal("0.01"))
-        final_gross_total = Decimal(str(final_net_total + final_vat_amount)).quantize(Decimal("0.01"))
+    # The customer-facing offer amount should use the manual override when present.
+    # The component calculation remains visible for control, but final net/vat/gross
+    # reflect the override.
+    final_net_total = manual_override_net if manual_override_net is not None else result.net_total
+    final_vat_amount = Decimal(str(final_net_total * Decimal(str(profile.vat_percent or 0)) / Decimal("100"))).quantize(Decimal("0.01"))
+    final_gross_total = Decimal(str(final_net_total + final_vat_amount)).quantize(Decimal("0.01"))
 
     calc = PricingCalculation(
         request=item,
@@ -1118,7 +1010,7 @@ def bus_request_calculate(item_id: int):
         vat_amount=final_vat_amount,
         gross_total=final_gross_total,
         manual_override_net=manual_override_net,
-        manual_note=manual_note,
+        manual_note=request.form.get("manual_note", "").strip() or None,
     )
     db.session.add(calc)
     item.status = "offer_in_preparation"

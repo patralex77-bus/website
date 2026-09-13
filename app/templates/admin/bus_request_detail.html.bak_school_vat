@@ -10,7 +10,6 @@
   'archived': 'Archiv'
 } %}
 {% set latest_calc = item.calculations[-1] if item.calculations else None %}
-{% set school_pricing_mode = school_pricing_mode if school_pricing_mode is defined else ('schul' in (((item.trip_type or '') ~ ' ' ~ (item.customer_type or '') ~ ' ' ~ (item.route_description or ''))|lower)) %}
 
 <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
   <div>
@@ -90,16 +89,10 @@
     {% if latest_calc %}
       <div class="mt-6 rounded-3xl bg-slate-900 p-6 text-white">
         <div class="text-sm font-black uppercase tracking-[.18em] text-red-300">Letzte Berechnung</div>
-        {% if school_pricing_mode %}
-          <div class="mt-3 text-4xl font-black">{{ latest_calc.display_gross_total|default(latest_calc.net_total) }} €</div>
-          <div class="mt-1 text-sm text-slate-300">Endpreis lt. Schulpreis-Kalkulation · inkl. gesetzlicher USt.</div>
-          <div class="mt-1 text-sm text-slate-300">Nettoanteil {{ latest_calc.display_net_total|default(latest_calc.net_total) }} € · enthaltene USt. {{ latest_calc.display_vat_amount|default(latest_calc.vat_amount) }} €</div>
-        {% else %}
-          <div class="mt-3 text-4xl font-black">{{ latest_calc.gross_total }} €</div>
-          <div class="mt-1 text-sm text-slate-300">Brutto · Netto {{ latest_calc.net_total }} € · USt {{ latest_calc.vat_amount }} €</div>
-        {% endif %}
+        <div class="mt-3 text-4xl font-black">{{ latest_calc.gross_total }} €</div>
+        <div class="mt-1 text-sm text-slate-300">Brutto · Netto {{ latest_calc.net_total }} € · USt {{ latest_calc.vat_amount }} €</div>
         {% if latest_calc.manual_override_net %}
-          <div class="mt-3 rounded-2xl bg-white/10 p-3 text-sm font-bold">Manual Override {% if school_pricing_mode %}Endpreis{% else %}Netto{% endif %}: {{ latest_calc.manual_override_net }} €</div>
+          <div class="mt-3 rounded-2xl bg-white/10 p-3 text-sm font-bold">Manual Override Netto: {{ latest_calc.manual_override_net }} €</div>
         {% endif %}
       </div>
     {% endif %}
@@ -123,7 +116,7 @@
         <label class="font-bold">Maut<input class="field mt-2" name="tolls" inputmode="decimal" value="0"></label>
         <label class="font-bold">Parken<input class="field mt-2" name="parking" inputmode="decimal" value="0"></label>
         <label class="font-bold">Fahrerhotel<input class="field mt-2" name="driver_hotel_cost" inputmode="decimal" value="0"></label>
-        <label class="font-bold">Manual Override {% if school_pricing_mode %}Endpreis inkl. USt.{% else %}Netto{% endif %}<input class="field mt-2" name="manual_override_net" inputmode="decimal" placeholder="optional"></label>
+        <label class="font-bold">Manual Override Netto<input class="field mt-2" name="manual_override_net" inputmode="decimal" placeholder="optional"></label>
       </div>
 
       <div class="check-grid grid gap-2 sm:grid-cols-2">
@@ -164,15 +157,9 @@
             {% endif %}
           </div>
           <div class="rounded-2xl bg-white p-4 text-right shadow-sm">
-            {% if school_pricing_mode %}
-              <div class="text-sm text-slate-500">Endpreis inkl. USt.</div>
-              <div class="text-2xl font-black text-red-700">{{ c.display_gross_total|default(c.net_total) }} €</div>
-              <div class="text-xs text-slate-500">Nettoanteil {{ c.display_net_total|default(c.net_total) }} € · USt enthalten {{ c.display_vat_amount|default(c.vat_amount) }} €</div>
-            {% else %}
-              <div class="text-sm text-slate-500">Brutto</div>
-              <div class="text-2xl font-black text-red-700">{{ c.gross_total }} €</div>
-              <div class="text-xs text-slate-500">Netto {{ c.net_total }} € · USt {{ c.vat_amount }} €</div>
-            {% endif %}
+            <div class="text-sm text-slate-500">Brutto</div>
+            <div class="text-2xl font-black text-red-700">{{ c.gross_total }} €</div>
+            <div class="text-xs text-slate-500">Netto {{ c.net_total }} € · USt {{ c.vat_amount }} €</div>
             {% if c.manual_override_net %}
               <div class="mt-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-700">Manual Override</div>
             {% endif %}
