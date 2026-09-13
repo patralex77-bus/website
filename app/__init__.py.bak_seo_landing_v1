@@ -29,10 +29,8 @@ def create_app(config_object=Config) -> Flask:
 
     from .routes.public import public_bp
     from .routes.admin import admin_bp
-    from .routes.seo_landing import seo_landing_bp
 
     app.register_blueprint(public_bp)
-    app.register_blueprint(seo_landing_bp)
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
     @app.context_processor
