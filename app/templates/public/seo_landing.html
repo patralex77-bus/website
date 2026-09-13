@@ -5,95 +5,100 @@
 {% block content %}
 <script type="application/ld+json">{{ page.schema_json|safe }}</script>
 
-<section class="bg-slate-950 text-white">
-  <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+<section class="relative overflow-hidden bg-slate-950 text-white">
+  <div class="absolute inset-0 opacity-20">
+    <div class="absolute -left-20 top-10 h-72 w-72 rounded-full bg-red-700 blur-3xl"></div>
+    <div class="absolute right-0 top-20 h-96 w-96 rounded-full bg-white blur-3xl"></div>
+  </div>
+
+  <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
     <div class="max-w-4xl">
       <p class="inline-flex rounded-full bg-white/10 px-4 py-2 text-sm font-black uppercase tracking-[.16em] text-red-200 ring-1 ring-white/15">{{ page.badge }}</p>
-      <h1 class="mt-6 text-4xl font-black tracking-tight sm:text-5xl">{{ page.h1 }}</h1>
+      <h1 class="mt-6 text-4xl font-black tracking-tight sm:text-5xl lg:text-6xl">{{ page.h1 }}</h1>
       <p class="mt-6 max-w-3xl text-lg leading-8 text-slate-300">{{ page.lead }}</p>
 
       <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-        <a href="/anfrage" class="rounded-2xl bg-red-700 px-6 py-4 text-center font-black text-white hover:bg-red-800">Anfrage senden</a>
-        <a href="/fuhrpark" class="rounded-2xl bg-white px-6 py-4 text-center font-black text-slate-950 hover:bg-slate-100">Fuhrpark ansehen</a>
+        <a href="/anfrage" class="rounded-2xl bg-red-700 px-6 py-4 text-center font-black text-white shadow-sm hover:bg-red-800">{{ page.primary_cta }}</a>
+        <a href="/kontakt" class="rounded-2xl bg-white px-6 py-4 text-center font-black text-slate-950 hover:bg-slate-100">Persönlich Kontakt aufnehmen</a>
       </div>
     </div>
   </div>
 </section>
 
 <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-  <div class="grid gap-8 lg:grid-cols-[1.1fr_.9fr]">
-    <article class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-      <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Leistung</p>
-      <h2 class="mt-3 text-3xl font-black">Worum es bei dieser Fahrt geht</h2>
-      <div class="mt-6 space-y-5 leading-8 text-slate-700">
-        {% for paragraph in page.intro %}
-          <p>{{ paragraph }}</p>
-        {% endfor %}
-      </div>
-
-      <div class="mt-8 flex flex-wrap gap-2">
-        {% for keyword in page.keywords %}
-          <span class="rounded-full bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700">{{ keyword }}</span>
-        {% endfor %}
-      </div>
+  <div class="grid gap-10 lg:grid-cols-[1.05fr_.95fr]">
+    <article class="space-y-10">
+      {% for section in page.sections %}
+        <section class="rounded-[2rem] border border-slate-200 bg-white p-7 shadow-sm sm:p-8">
+          <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">{{ section.eyebrow }}</p>
+          <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-950">{{ section.title }}</h2>
+          <div class="mt-6 space-y-5 text-[17px] leading-8 text-slate-700">
+            {% for paragraph in section.paragraphs %}
+              <p>{{ paragraph }}</p>
+            {% endfor %}
+          </div>
+        </section>
+      {% endfor %}
     </article>
 
-    <aside class="rounded-[2rem] bg-slate-900 p-8 text-white shadow-sm">
-      <p class="text-sm font-black uppercase tracking-[.18em] text-red-300">Schnell anfragen</p>
-      <h2 class="mt-3 text-2xl font-black">Welche Angaben helfen?</h2>
-      <ul class="mt-6 space-y-3 text-slate-200">
-        <li>✓ Datum der Fahrt</li>
-        <li>✓ Abfahrtsort und Zieladresse</li>
-        <li>✓ Abfahrtszeit und Rückkehrzeit</li>
-        <li>✓ Personenanzahl und Gepäck</li>
-        <li>✓ Zwischenstopps oder Sonderwünsche</li>
-      </ul>
-      <a href="/anfrage" class="mt-8 inline-flex rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">Jetzt Anfrage stellen</a>
+    <aside class="space-y-6 lg:sticky lg:top-32 lg:self-start">
+      <div class="rounded-[2rem] bg-slate-950 p-7 text-white shadow-sm">
+        <p class="text-sm font-black uppercase tracking-[.18em] text-red-300">Direkt anfragen</p>
+        <h2 class="mt-3 text-2xl font-black">Damit wir sinnvoll kalkulieren können</h2>
+        <ul class="mt-6 space-y-3 text-slate-200">
+          {% for item in page.planning %}
+            <li class="flex gap-3"><span class="font-black text-red-300">{{ loop.index }}.</span><span>{{ item }}</span></li>
+          {% endfor %}
+        </ul>
+        <a href="/anfrage" class="mt-8 inline-flex rounded-2xl bg-red-700 px-6 py-4 font-black text-white hover:bg-red-800">Anfrageformular öffnen</a>
+      </div>
+
+      <div class="rounded-[2rem] border border-slate-200 bg-white p-7 shadow-sm">
+        <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Was Kunden schätzen</p>
+        <ul class="mt-5 space-y-3 leading-7 text-slate-700">
+          {% for item in page.trust_points %}
+            <li>✓ {{ item }}</li>
+          {% endfor %}
+        </ul>
+      </div>
     </aside>
   </div>
 </section>
 
 <section class="bg-white">
-  <div class="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:px-6 lg:grid-cols-3 lg:px-8">
-    <div class="rounded-[2rem] bg-slate-50 p-7">
-      <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Typische Nutzung</p>
-      <h2 class="mt-3 text-2xl font-black">Geeignet für</h2>
-      <ul class="mt-5 space-y-3 leading-7 text-slate-700">
-        {% for item in page.use_cases %}
-          <li>✓ {{ item }}</li>
-        {% endfor %}
-      </ul>
-    </div>
+  <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+    <div class="grid gap-7 lg:grid-cols-2">
+      <div class="rounded-[2rem] bg-slate-50 p-8">
+        <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Typische Situationen</p>
+        <h2 class="mt-3 text-3xl font-black">Wann diese Leistung besonders gut passt</h2>
+        <ul class="mt-6 grid gap-3 text-slate-700 sm:grid-cols-2">
+          {% for item in page.use_cases %}
+            <li class="rounded-2xl bg-white p-4 shadow-sm">✓ {{ item }}</li>
+          {% endfor %}
+        </ul>
+      </div>
 
-    <div class="rounded-[2rem] bg-slate-50 p-7">
-      <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Planung</p>
-      <h2 class="mt-3 text-2xl font-black">So läuft es ab</h2>
-      <ol class="mt-5 space-y-3 leading-7 text-slate-700">
-        {% for item in page.planning %}
-          <li><strong>{{ loop.index }}.</strong> {{ item }}</li>
-        {% endfor %}
-      </ol>
-    </div>
-
-    <div class="rounded-[2rem] bg-slate-50 p-7">
-      <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Beispiele</p>
-      <h2 class="mt-3 text-2xl font-black">Mögliche Strecken</h2>
-      <ul class="mt-5 space-y-3 leading-7 text-slate-700">
-        {% for item in page.routes %}
-          <li>• {{ item }}</li>
-        {% endfor %}
-      </ul>
+      <div class="rounded-[2rem] bg-slate-50 p-8">
+        <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Beispiele aus der Praxis</p>
+        <h2 class="mt-3 text-3xl font-black">Fahrten, die oft angefragt werden</h2>
+        <div class="mt-6 flex flex-wrap gap-3">
+          {% for item in page.routes %}
+            <span class="rounded-full bg-white px-4 py-3 font-bold text-slate-700 shadow-sm">{{ item }}</span>
+          {% endfor %}
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
   <div class="mb-8 max-w-3xl">
-    <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">FAQ</p>
+    <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Fragen vor der Buchung</p>
     <h2 class="mt-3 text-3xl font-black">Häufige Fragen</h2>
+    <p class="mt-4 leading-7 text-slate-600">Die Antworten geben eine erste Orientierung. Für ein verbindliches Angebot zählen immer die konkreten Angaben Ihrer Fahrt.</p>
   </div>
 
-  <div class="grid gap-5 lg:grid-cols-3">
+  <div class="grid gap-5 lg:grid-cols-2">
     {% for item in page.faq %}
       <article class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
         <h3 class="text-xl font-black">{{ item.q }}</h3>
@@ -107,9 +112,9 @@
   <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
     <div class="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
       <div>
-        <p class="text-sm font-black uppercase tracking-[.18em] text-red-300">Weitere Leistungen</p>
-        <h2 class="mt-3 text-3xl font-black">Verwandte Suchthemen</h2>
-        <p class="mt-4 leading-7 text-slate-300">Diese Seiten helfen bei ähnlichen Anfragen rund um Bus, Transport, Schule, Gruppe und Wien.</p>
+        <p class="text-sm font-black uppercase tracking-[.18em] text-red-300">Weiterdenken</p>
+        <h2 class="mt-3 text-3xl font-black">Ähnliche Leistungen</h2>
+        <p class="mt-4 leading-7 text-slate-300">Nicht jede Anfrage passt in dieselbe Kategorie. Diese Seiten helfen, die richtige Leistung schneller zu finden.</p>
       </div>
 
       <div class="flex flex-wrap gap-3">

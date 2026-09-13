@@ -359,13 +359,12 @@
   </main>
 
 
-  
-  <!-- SEO_CORPORATE_LANDING_LINKS_V2 -->
+  <!-- SEO_LANDING_INTERNAL_LINKS_V1 -->
   <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
     <div class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
       <p class="text-sm font-black uppercase tracking-[.18em] text-red-700">Beliebte Leistungen</p>
       <h2 class="mt-3 text-3xl font-black">Bus, Transport und Ausflüge ab Wien</h2>
-      <p class="mt-4 max-w-3xl leading-7 text-slate-600">Für viele Gruppen beginnt die Suche mit einer konkreten Situation: Schule, Kindergruppe, Firmenfahrt, Vereinsausflug oder Transfer. Diese Seiten führen direkt zu den passenden Informationen.</p>
+      <p class="mt-4 max-w-3xl leading-7 text-slate-600">Direkte Informationen für häufige Anfragen: Bus mieten, Schulfahrten, Kindergruppen, Firmenfahrten, Vereinsausflüge und Gruppentransfers.</p>
       <div class="mt-6 flex flex-wrap gap-3 text-sm font-bold">
         <a href="/bus-mieten-wien" class="rounded-2xl bg-slate-100 px-4 py-3 hover:bg-red-700 hover:text-white">Bus mieten Wien</a>
         <a href="/reisebus-mieten-wien" class="rounded-2xl bg-slate-100 px-4 py-3 hover:bg-red-700 hover:text-white">Reisebus mieten Wien</a>
