@@ -67,11 +67,12 @@
 
       <nav class="border-t border-slate-200 py-4 shadow-[0_1px_4px_rgba(0,0,0,.04)]">
         <div class="flex flex-wrap items-center gap-3 text-[16px] font-bold">
-          <a href="{{ url_for('public.anfrage', type='school') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Bus Rental</a>
-          <a href="{{ url_for('public.index') }}#tours" class="rounded-xl px-5 py-3 text-slate-400 cursor-not-allowed">Tours</a>
+          <a href="{{ url_for('public.bus_rental') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Bus Rental</a>
+          <a href="{{ url_for('public.index') }}#tours" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Tours</a>
           <a href="{{ url_for('public.schulen') }}" class="rounded-xl bg-red-700 px-5 py-3 text-white transition">Schulen</a>
           <a href="{{ url_for('public.fuhrpark') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Fuhrpark</a>
           <a href="{{ url_for('public.anfrage') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Anfrage</a>
+          <a href="{{ url_for('public.aktuelles') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Aktuelles</a>
           <a href="{{ url_for('public.contact') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Kontakt</a>
         </div>
       </nav>

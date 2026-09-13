@@ -69,7 +69,8 @@
           <a href="{{ url_for('public.index') }}#tours" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Tours</a>
           <a href="{{ url_for('public.schulen') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Schulen</a>
           <a href="{{ url_for('public.fuhrpark') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Fuhrpark</a>
-          <a href="{{ url_for('public.anfrage') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Anfrage</a>
+          <a href="{{ url_for('public.anfrage') }}" class="rounded-xl bg-red-700 px-5 py-3 text-white transition">Anfrage</a>
+          <a href="{{ url_for('public.aktuelles') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Aktuelles</a>
           <a href="{{ url_for('public.contact') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Kontakt</a>
         </div>
       </nav>
@@ -291,7 +292,7 @@
               <h2 class="mt-2 text-2xl font-black text-slate-950">Berechneter Preis lt. Ihren Angaben</h2>
               <p id="customerPriceHint" class="mt-2 text-sm leading-6 text-slate-600">Bitte Tour, Abfahrtszeit und Rückkehr auswählen.</p>
             </div>
-            <div id="customerPriceCards" class="grid gap-3 text-sm sm:grid-cols-2 xl:grid-cols-3 lg:min-w-[520px]">
+            <div id="customerPriceCards" class="grid w-full gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               <div class="rounded-2xl bg-white p-4">
                 <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">Preisprofile</div>
                 <div class="mt-2 text-2xl font-black text-slate-950">–</div>
@@ -421,7 +422,6 @@
             ? calculatePriceForProfile(profile, waitHours)
             : parseNumber(profile.amount);
           const priceText = finalPrices ? formatFinalEuro(amount) : formatEuro(amount);
-
           return `
             <div class="rounded-2xl ${finalPrices ? 'bg-white' : 'bg-slate-50'} p-4">
               <div class="text-xs font-black uppercase tracking-[.16em] text-slate-500">${escapeHtml(profile.name || 'Preisprofil')}</div>
