@@ -95,16 +95,16 @@
         </div>
       </div>
 
-      <!-- Main navigation -->
+      <!-- Main navigation | NAV_VERSION_AKTUELLES_VISIBLE_V3 -->
       <nav class="border-t border-slate-200 py-4 shadow-[0_1px_4px_rgba(0,0,0,.04)]">
         <div class="flex flex-wrap items-center gap-3 text-[16px] font-bold">
-          <a href="{{ url_for('public.bus_rental') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Bus Rental</a>
-          <a href="{{ url_for('public.index') }}#tours" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Tours</a>
-          <a href="{{ url_for('public.schulen') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Schulen</a>
-          <a href="{{ url_for('public.fuhrpark') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Fuhrpark</a>
-          <a href="{{ url_for('public.anfrage') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Anfrage</a>
-          <a href="{{ url_for('public.aktuelles') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Aktuelles</a>
-          <a href="{{ url_for('public.contact') }}" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Kontakt</a>
+          <a href="/bus-rental" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Bus Rental</a>
+          <a href="/#tours" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Tours</a>
+          <a href="/schulen" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Schulen</a>
+          <a href="/fuhrpark" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Fuhrpark</a>
+          <a href="/anfrage" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Anfrage</a>
+          <a href="/aktuelles" data-nav-item="aktuelles" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Aktuelles</a>
+          <a href="/kontakt" class="rounded-xl px-5 py-3 text-slate-800 transition hover:bg-slate-100 hover:text-red-700">Kontakt</a>
         </div>
       </nav>
     </div>
@@ -370,8 +370,9 @@
           <a href="{{ url_for('public.index') }}#tours" class="hover:text-slate-950">Tours</a>
           <a href="{{ url_for('public.schulen') }}" class="hover:text-slate-950">Schulen</a>
           <a href="{{ url_for('public.fuhrpark') }}" class="hover:text-slate-950">Fuhrpark</a>
-          <a href="{{ url_for('public.anfrage') }}" class="hover:text-slate-950">Anfrage</a>
-          <a href="{{ url_for('public.contact') }}" class="hover:text-slate-950">Kontakt</a>
+          <a href="/anfrage" class="hover:text-slate-950">Anfrage</a>
+          <a href="/aktuelles" class="hover:text-slate-950">Aktuelles</a>
+          <a href="/kontakt" class="hover:text-slate-950">Kontakt</a>
         </div>
         <div class="flex flex-wrap gap-4 font-semibold">
           <a href="{{ url_for('public.impressum') }}" class="hover:text-slate-950">Impressum</a>
@@ -381,5 +382,7 @@
       </div>
     </div>
   </footer>
+
+  <!-- NAV_VERSION_AKTUELLES_VISIBLE_V3_END -->
 </body>
 </html>
