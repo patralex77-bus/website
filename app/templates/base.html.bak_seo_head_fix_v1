@@ -5,14 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}Austria Express{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}Austria Express – Busreisen, Transfers, Mietbusleistungen und Gruppenreisen.{% endblock %}" />
-  <!-- SEO_CANONICAL_BASE_FIX_V1 -->
-  {% if canonical is defined %}
-  <link rel="canonical" href="{{ canonical }}">
-  {% elif page is defined and page.canonical is defined %}
-  <link rel="canonical" href="{{ page.canonical }}">
-  {% else %}
-  <link rel="canonical" href="{{ request.base_url }}">
-  {% endif %}
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/site.css') }}">
 </head>

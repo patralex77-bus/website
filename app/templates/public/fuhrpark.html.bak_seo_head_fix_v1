@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fuhrpark – Austria Express</title>
   <meta name="description" content="Fuhrpark von Austria Express: Doppeldecker, moderne Reisebusse und kompakte Busse für Schulen, Gruppen und Firmen ab Wien." />
-  <link rel="canonical" href="{{ request.base_url }}">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html { scroll-behavior: smooth; }
